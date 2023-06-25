@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const ejs = require("ejs");
 const puppeteer = require('puppeteer');
+const  toPDF = require('html-pdf-node');
 const AWS = require('aws-sdk');
 const cookieParser = require('cookie-parser');
 const axios = require('axios');
@@ -187,7 +188,18 @@ const GiftCard = mongoose.model("GiftCard" , giftCardSchema);
 // function to generate Invoice
 
 async function generateInvoice(booking , user) {
-    const browser = await puppeteer.launch();
+    // const browser = await puppeteer.launch();
+    var browser = await puppeteer.launch({
+        args: [
+        '--ignore-certificate-errors',
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--window-size=1920,1080',
+        "--disable-accelerated-2d-canvas",
+        "--disable-gpu"],
+        ignoreHTTPSErrors: true,
+        headless: true,
+    });
     const page = await browser.newPage();
     const template = fs.readFileSync('invoicetemp.ejs', 'utf8');
   
