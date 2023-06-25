@@ -7,7 +7,6 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const ejs = require("ejs");
 const puppeteer = require('puppeteer');
-const  toPDF = require('html-pdf-node');
 const AWS = require('aws-sdk');
 const cookieParser = require('cookie-parser');
 const axios = require('axios');
