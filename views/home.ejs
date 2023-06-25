@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>EazyBus</title>
+  <meta name="theme-color" content="#010483">
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Montserrat:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+    rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="../assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="../assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="../assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="../assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/flick/jquery-ui.css">
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/flick/jquery-ui.css">
+
+
+  <!-- Template Main CSS File -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css">
+  <link href="../assets/css/book.css" rel="stylesheet">
+  <link href="../assets/css/style.css" rel="stylesheet">
+  <!-- Vendor JS Files -->
+
+  <script src="https://code.jquery.com/jquery-3.6.4.js" integrity="sha256-a9jBBRygX1Bh5lt8GZjXDzyOB+bWve9EiO7tROUtj/E="
+    crossorigin="anonymous"></script>
+  <script src="https://kit.fontawesome.com/3ea55f06b5.js" crossorigin="anonymous"></script>
+  <script src="../assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+    crossorigin="anonymous"></script>
+  <script src="../assets/vendor/aos/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="../assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="../assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+</head>
+
+<body onload="clearOnload()">
+
+  <!-- ======= Header ======= -->
+  <header id="header" class="fixed-top d-flex align-items-center header-transparent">
+    <div class="container d-flex align-items-center justify-content-between">
+
+      <div class="logo">
+        <h1><a href="/"><img style="margin-bottom: 0.5rem;" width="37px" src="assets/img/favicon.png"
+              alt="logo"><span>EazyBus</span></a></h1>
+        <!-- Uncomment below if you prefer to use an image logo -->
+        <!-- <a href="index.html"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>-->
+      </div>
+
+      <nav id="navbar" class="navbar">
+        <ul>
+          <li><a class="nav-link scrollto active" href="#hero">Home</a></li>
+          <li><a class="nav-link scrollto" href="#booking">Book Now</a></li>
+          <li><a class="nav-link scrollto" href="#routes">Routes</a></li>
+          <li><a class="nav-link scrollto" href="/contact">Contact</a></li>
+
+
+          <li class="dropdown">
+            <% if (loggedIn) { %>
+              <% if (user_gender==="Male" ) { %>
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <img style="margin-right: 5px;"
+                    src="https://img.icons8.com/color/48/000000/circled-user-male-skin-type-1-2--v1.png"
+                    alt="circled-user-male-skin-type-7--v1" width="35" height="35" class="rounded-circle">
+                  <%= name %>
+                </a>
+                <ul>
+                  <li><a href="/bookings">Trips<i class="fa-solid fa-suitcase-rolling"></i></a></li>
+                  <li><a href="/profile">Profile<i class="fa-solid fa-user"></i></a></li>
+                  <li><a href="/wallet">Wallet<i class="fa-solid fa-wallet"></i></a></li>
+                  <li><a href="/logout">Logout<i class="fa-solid fa-right-from-bracket"></i></a></li>
+                </ul>
+                <% } else { %>
+                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <img style="margin-right: 5px;"
+                      src="https://img.icons8.com/color/48/000000/circled-user-female-skin-type-7--v1.png"
+                      alt="circled-user-female-skin-type-7--v1" alt="circled-user-male-skin-type-7--v1" width="35"
+                      height="35" class="rounded-circle">
+                    <%= name %>
+                  </a>
+                  <ul>
+                    <li><a href="/bookings">Trips<i class="fa-solid fa-suitcase-rolling"></i></a></li>
+                    <li><a href="/profile">Profile<i class="fa-solid fa-user"></i></a></li>
+                    <li><a href="/wallet">Wallet<i class="fa-solid fa-wallet"></i></a></li>
+                    <li><a href="/logout">Logout<i class="fa-solid fa-right-from-bracket"></i></a></li>
+                  </ul>
+                  <% } %>
+                    <% } else { %>
+                      <a href="/login"><span>Login<i class="bi bi-chevron-down"></i></span></a>
+                      <ul>
+                        <li><a href="/bookings">Trips<i class="fa-solid fa-suitcase-rolling"></i></a></li>
+                        <li><a href="/profile">Profile<i class="fa-solid fa-user"></i></a></li>
+                        <li><a href="/wallet">Wallet<i class="fa-solid fa-wallet"></i></a></li>
+                      </ul>
+                      <% } %>
+
+          </li>
+        </ul>
+        <i class="bi bi-list mobile-nav-toggle"></i>
+      </nav><!-- .navbar -->
+
+    </div>
+  </header><!-- End Header -->
+
+  <!-- ======= Hero Section ======= -->
+  <section id="hero">
+
+    <div class="container">
+      <div class="row justify-content-between">
+        <div class="col-lg-7 pt-5 pt-lg-0 order-2 order-lg-1 d-flex align-items-center">
+          <div data-aos="zoom-out">
+            <h1>
+              <div style="margin-bottom: 1rem;"><span>eazybus.com</span></div>Book your bus online!
+            </h1>
+            <div>
+              <p style="color: #ffffff; margin-top: 2rem;"><img style="margin-right: 1rem;" width="40px"
+                  src="https://cdn-icons-png.flaticon.com/512/1021/1021220.png" alt=""><span>Top Rated Bus Provider in
+                  India</span>
+              </p>
+            </div>
+            <div style="padding-bottom: 12rem;" class="text-center text-lg-start">
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 order-1 order-lg-2 hero-img" data-aos="zoom-out" data-aos-delay="300">
+          <img src="https://eazybus.s3.ap-south-1.amazonaws.com/img/pp.png" class="img-fluid animated" alt="">
+        </div>
+      </div>
+    </div>
+  </section><!-- End Hero -->
+
+  <!-- START #main -->
+  <main id="main">
+
+    <!-- Booking Section -->
+    <section id="booking" class="bookingForm">
+      <div id="booking" class="section">
+        <div class="section-center">
+          <div class="container">
+            <div class="section-title">
+              <h2>Bus Booking</h2>
+              <p>Book now</p>
+            </div>
+            <div class="row">
+              <div style="display: none;" id="verifyAlert">
+                <div class="msg msg-danger msg-danger-text"> <i class="fa-solid fa-circle-exclamation"
+                    style="color: #c9302c; margin-right: 10px;"></i> <span>Origin and Destination cannot be same!</span>
+                </div>
+              </div>
+              <div style="border-radius: 20px; background-color: rgba(2, 5, 161, 0.91);"
+                class="container homeBookForm booking-form">
+                <form onsubmit="saveCookies()" id="form" action="/search=q?" method="post">
+                  <div class="row no-margin">
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <span class="form-label">Origin</span>
+                        <select id="origin" style="width: 100%;" required name="origin" onchange="verify()"
+                          class="form-select cityinput" oninvalid="this.setCustomValidity('Please choose a city')"
+                          oninput="setCustomValidity('')">
+                          <option disabled value="" selected="selected" hidden></option>
+                          <option value="Indore">Indore</option>
+                          <option value="Delhi">Delhi</option>
+                          <option value="Mumbai">Mumbai</option>
+                          <option value="Pune">Pune</option>
+                          <option value="Chennai">Chennai</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="row no-margin">
+                        <div class="col-md-5">
+                          <div class="form-group">
+                            <span class="form-label">Destination</span>
+                            <select id="destination" style="width: 100%;" required name="destination"
+                              onchange="verify()" class="form-select cityinput"
+                              oninvalid="this.setCustomValidity('Please choose a city')"
+                              oninput="setCustomValidity('')">
+                              <option disabled value="" selected="selected" hidden></option>
+                              <option value="Indore">Indore</option>
+                              <option value="Delhi">Delhi</option>
+                              <option value="Mumbai">Mumbai</option>
+                              <option value="Pune">Pune</option>
+                              <option value="Chennai">Chennai</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <span class="form-label">Departure Date</span>
+                            <input readonly="true" autocomplete="off" class="form-control"
+                              style="width: 100%; padding-left: 10px; padding-right: 10px;" name="d_date" type="text"
+                              id="datepicker" required oninvalid="this.setCustomValidity('Please choose a date')"
+                              oninput="setCustomValidity('')">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="form-btn">
+                        <button style="border-radius: 20px;" class="submit-btn">Search buses</button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!--  Coupon Section -->
+    <section  style="margin-top: 1rem;" class="features">
+      <div class="container">
+        <div class="section-title">
+          <h2>OFFERS</h2>
+          <p>COUPONS</p>
+        </div>
+        <div style="margin-top: 2rem;" class="row">
+          <div class="col-md-4 mb-4">
+            <div class="card couponCard mx-auto firstCard shadow-lg p-1 mb-3">
+              <div class="card-body">
+                <span style="float: right; color: aliceblue;">New</span>
+                <h5 style="font-weight: 900;" class="card-title">WALLET05 <button
+                    style="border: none; margin-bottom: 3px;" class="btn btn-sm" data-bs-toggle="modal"
+                    data-bs-target="#exampleModal1"><i style="color: #000000;"
+                      class="fa-solid fa-circle-info"></i></button></h5>
+                <p style="margin-top: 1rem;" class="card-text">Get 5% off on adding balance to wallet of above
+                  &#8377;500</p>
+                <div style="margin-top: 2rem;" class="text-center">
+                  <a href="/addbalance" class="btn btn-dark">Claim Offer</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="card couponCard mx-auto secondCard shadow-lg p-1 mb-3">
+              <div class="card-body">
+                <span style="float: right; color: aliceblue;">New</span>
+                <h5 style="font-weight: 900;" class="card-title">BUS10 <button style="border: none; margin-bottom: 3px;"
+                    class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal2"><i style="color: #000000;"
+                      class="fa-solid fa-circle-info"></i></button></h5>
+                <p style="margin-top: 1rem;" class="card-text">Get 10% off on bus bookings above &#8377;1500</p>
+                <div style="margin-top: 2rem;" class="text-center">
+                  <a href="#booking" class="btn btn-dark">Claim Offer</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-4">
+            <div class="card couponCard mx-auto thirdCard shadow-lg p-1 mb-3">
+              <div class="card-body">
+                <h5 style="font-weight: 900;" class="card-title">BUS50 <button style="border: none; margin-bottom: 3px;"
+                    class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal3"><i style="color: #000000;"
+                      class="fa-solid fa-circle-info"></i></button></h5>
+                <p style="margin-top: 1rem;" class="card-text">Get FLAT &#8377;50 off on bus bookings above &#8377;499
+                </p>
+                <div style="margin-top: 2rem;" class="text-center">
+                  <a href="#booking" class="btn btn-dark">Claim Offer</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section><!-- End Coupon Section -->
+
+    <!-- ======= Routes Section ======= -->
+    <section id="routes" style="margin-top: 1rem;" class="features">
+      <div class="container">
+
+        <div class="section-title">
+          <h2>Popular Routes</h2>
+          <p>Daily Service</p>
+        </div>
+
+        <div>
+          <div class="row justify-content-center">
+            <div style="margin-bottom: 30px;" class="col-md-3">
+              <div class="card h-100 mx-auto" style="width: 15rem;">
+                <img style="height : 200px"
+                  src="https://cdn.dribbble.com/users/2014642/screenshots/5965790/media/e6870ad0db59476a9138b4679e1614ee.png?resize=400x0"
+                  class="card-img-top" alt="...">
+                <div class="card-body">
+                  <h5 style="font-weight: 600;" name="title" class="card-title route_name text-center">Indore &#8646;
+                    Mumbai</h5>
+                  <p name="price" class="card-text text-center route_fare">Fares starting from <a
+                      style="font-weight: 600; color: black;">&#8377;1199</a>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 30px;" class="col-md-3">
+              <div class="card h-100 mx-auto" style="width: 15rem;">
+                <img style="height : 200px"
+                  src="https://cdn.dribbble.com/users/2014642/screenshots/5965866/media/dd2984e5f2a5a54a59085af2952e97d1.png?compress=1&resize=450x338&vertical=center"
+                  class="card-img-top" alt="...">
+                <div class="card-body">
+                  <h5 style="font-weight: 600;" name="title" class="card-title route_name text-center">Indore &#8646;
+                    Delhi</h5>
+                  <p name="price" class="card-text text-center route_fare">Fares starting from <a
+                      style="font-weight: 600; color: black;">&#8377;1099</a>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 30px;" class="col-md-3">
+              <div class="card h-100 mx-auto" style="width: 15rem;">
+                <img style="height : 200px"
+                  src="https://cdn.dribbble.com/users/2014642/screenshots/5971907/media/06a72f7f12fbf0d82c9ef6c323226426.png?compress=1&resize=1000x750&vertical=center" class="card-img-top"
+                  alt="...">
+                <div class="card-body">
+                  <h5 style="font-weight: 600;" name="title" class="card-title route_name text-center">Indore &#8646;
+                    Pune</h5>
+                  <p name="price" class="card-text text-center route_fare">Fares starting from <a
+                      style="font-weight: 600; color: black;">&#8377;999</a>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 30px;" class="col-md-3">
+              <div class="card h-100 mx-auto" style="width: 15rem;">
+                <img style="height : 200px"
+                  src="https://cdn.dribbble.com/users/2014642/screenshots/5977218/media/7d662cde09b75c4d8732f08e76d008df.png?compress=1&resize=400x300&vertical=center"
+                  class="card-img-top" alt="...">
+                <div class="card-body">
+                  <h5 style="font-weight: 600;" name="title" class="card-title route_name text-center">Indore &#8646;
+                    Chennai</h5>
+                  <p name="price" class="card-text text-center route_fare">Fares starting from <a
+                      style="font-weight: 600; color: black;">&#8377;1699</a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p style="text-align: center; color: #1acc8d;">and many more.</p>
+
+      </div>
+    </section><!-- End Routes Section -->
+
+    <!-- ======= Counts Section ======= -->
+    <section id="counts" class="counts">
+      <div class="container">
+
+        <div class="row" data-aos="fade-up">
+          <div class="col-lg-3 col-md-6">
+            <div class="count-box">
+              <i class="bi bi-emoji-smile"></i>
+              <span data-purecounter-start="0" data-purecounter-end="50000" data-purecounter-duration="1"
+                class="purecounter"></span>
+              <p>Happy Customers</p>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 mt-5 mt-md-0">
+            <div class="count-box">
+              <i class="bi-arrow-left-right"></i>
+              <span data-purecounter-start="0" data-purecounter-end="6" data-purecounter-duration="1"
+                class="purecounter"></span>
+              <p>Routes</p>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 mt-5 mt-lg-0">
+            <div class="count-box">
+              <i class="bi bi-headset"></i>
+              <span>24x7</span>
+              <p>Customer Support</p>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 mt-5 mt-lg-0">
+            <div class="count-box">
+              <i class="bi bi-people"></i>
+              <span data-purecounter-start="0" data-purecounter-end="250" data-purecounter-duration="1"
+                class="purecounter"></span>
+              <p>Hard Workers</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section><!-- End Counts Section -->
+
+    <!-- ======= Contact Section ======= -->
+    <section id="contact" class="contact">
+      <div>
+        <div class="container text-center">
+          <div class="row">
+            <div style="margin-top: 2rem;" class="col-sm-6 animated">
+              <img width="92%" height="92%" src="https://eazybus.s3.ap-south-1.amazonaws.com/img/app.png" alt="">
+            </div>
+            <div style="margin-bottom: 3rem;" class="col-sm-6">
+              <h1 class="customHue" style="font-weight: 600; font-size: 2rem; color: #000000;">Download the all new</h1>
+              <h1 style="font-weight: bold; font-size: 4rem; color: #0039d6;">
+                eazybus app
+              </h1>
+              <div style="margin-top: 3rem;">
+                <a target="_blank" class="market-btn google-btn" role="button">
+                  <span class="market-button-subtitle">Download on the</span>
+                  <span class="market-button-title">Google Play</span>
+                </a>
+                <a target="_blank" class="market-btn apple-btn" role="button">
+                  <span class="market-button-subtitle">Download on the</span>
+                  <span class="market-button-title">App Store</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section><!-- End Contact Section -->
+
+    <!-- MODAL SECTION -->
+
+    <div style="margin-top: 6rem;" class="modal fade" id="exampleModal1" tabindex="-1" role="dialog"
+      aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title" id="exampleModalLabel">WALLET05</h3>
+            <button type="button" class="close btn" data-bs-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <h4>Terms and Conditions</h4>
+            <ul>
+              <li>Get 5% off on recharge of eazy-Wallet above &#8377;500.</li>
+              <li>This coupon is valid only for eazy-Wallet recharge transactions.</li>
+              <li>The minimum transaction amount should be &#8377;500 to be eligible for the discount.
+              </li>
+              <li>Apply coupon code "WALLET05" during checkout to avail the discount.</li>
+              <li>This coupon cannot be combined with any other offers or promotions.</li>
+              <li>The coupon is valid for a limited time period and subject to change without
+                prior notice.</li>
+              <li>This coupon is non-transferable and cannot be redeemed for cash.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 6rem;" class="modal fade" id="exampleModal2" tabindex="-1" role="dialog"
+      aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title" id="exampleModalLabel">BUS10</h3>
+            <button type="button" class="close btn" data-bs-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <h4>Terms and Conditions</h4>
+            <ul>
+              <li>Get 10% off on bus bookings above &#8377;1500.</li>
+              <li>The minimum booking amount should be &#8377;1500 to be eligible for the discount.</li>
+              <li>Apply coupon code "BUS10" during checkout to avail the discount.</li>
+              <li>This coupon cannot be combined with any other offers or promotions.</li>
+              <li>This coupon is only applicable on stripe payment method.</li>
+              <li>The coupon is valid for a limited time period and subject to change without prior notice.</li>
+              <li>This coupon is non-transferable and cannot be redeemed for cash.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 6rem;" class="modal fade" id="exampleModal3" tabindex="-1" role="dialog"
+      aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title" id="exampleModalLabel">BUS50</h3>
+            <button type="button" class="close btn" data-bs-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <h4>Terms and Conditions</h4>
+            <ul>
+              <li>Get FLAT &#8377;50 off on bus bookings above &#8377;1500.</li>
+              <li>Apply coupon code "BUS50" during checkout to avail the discount.</li>
+              <li>This coupon cannot be combined with any other offers or promotions.</li>
+              <li>This coupon is only applicable on stripe payment method.</li>
+              <li>The coupon is valid for a limited time period and subject to change without prior notice.</li>
+              <li>This coupon is non-transferable and cannot be redeemed for cash.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main><!-- End #main -->
+
+  <!-- ======= Footer ======= -->
+  <%- include("partials/footer"); -%>
+
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
+        class="bi bi-arrow-up-short"></i></a>
+    <div id="preloader"></div>
+
+
+    <!-- Template Main JS File -->
+    <script src="../assets/js/main.js"></script>
+    <script>
+      $(function () {
+        $("#datepicker").datepicker({
+          dateFormat: "dd-mm-yy",
+          maxDate: "1D",
+          minDate: "0D"
+        });
+      });
+      const d = new Date();
+      let year = d.getFullYear();
+      document.getElementById("year").innerHTML = year;
+      $(document).ready(function () {
+        $('.cityinput').select2({
+          placeholder: "Select a city",
+          theme: 'bootstrap4',
+        });
+      });
+      function contactClick(e) {
+        e.preventDefault();
+        document.getElementById("contact_form").reset();
+        Swal.fire(
+          'Submitted!',
+          '',
+          'success'
+        )
+        return false;
+      }
+      function subscribeClick(e) {
+        e.preventDefault();
+        document.getElementById("subscribe_form").reset();
+        Swal.fire(
+          'Hurray! Subscribed!',
+          '',
+          'success'
+        )
+        return false;
+      }
+
+      function verify() {
+        let a = document.getElementById("origin").value;
+        let b = document.getElementById("destination").value;
+        if (a === b) {
+          $("#verifyAlert").show(function (err) {
+            if (!err) {
+              $('#destination').val('');
+            }
+            return true;
+          });
+        } else {
+          $("#verifyAlert").hide()
+        }
+      }
+      // function to clear cookies
+      function clearAllCookies() {
+        const cookies = document.cookie.split(';');
+
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i];
+          const eqPos = cookie.indexOf('=');
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+        }
+      }
+
+      
+
+      if (!<%- loggedIn %>) {
+        function saveCookies() {
+          function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+            document.cookie = name + '=' + encodeURIComponent(value) + ';expires=' + expires.toUTCString() + ';path=/';
+          }
+
+          const origin = $("#origin").val();;
+          const destination = $("#destination").val();;
+          const journeyDate = $("#datepicker").val();;
+
+          setCookie('origin', origin, 7);
+          setCookie('destination', destination, 7);
+          setCookie('journeyDate', journeyDate, 7);
+        }
+      } else {
+        clearAllCookies();
+      }
+
+      function clearOnload(){
+        clearAllCookies();
+      }
+
+
+    </script>
+</body>
+
+</html>

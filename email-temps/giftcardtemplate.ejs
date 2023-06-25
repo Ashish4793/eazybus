@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <style>
+        body {
+            font-family:  "MS Sans Serif";
+            background-color: #ffffff;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #F0EEED;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+            margin-top: 3rem;
+        }
+
+        h1 {
+            color: #000000;
+            font-size: 28px;
+            margin-top: 0;
+        }
+        h3{
+            font-size: 1.5rem;
+            color: #0d12fc;
+        }
+
+        p {
+            color: #000000;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 4px;
+        }
+
+        .button {
+            background-color: #0d12fc;
+            color: #ffffff;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background-color: #0d12fc;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .footer p {
+            color: #000000;
+            font-size: 14px;
+        }
+        .center {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 30%;
+        }
+        .otp {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0d12fc;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img style="margin-bottom: 1rem;" src="https://www.linkpicture.com/q/logo_306.png" class="center" alt="eazybus logo">
+        <h1 style="font-weight: bold;">CONFIDENTIAL</h1>
+        <p>Dear <%= name %>,</p>
+        <p>Your Gift Card details are </p>
+        <p>Face Value : <h3 style="font-weight: 600;">&#8377;<%= faceValue %></h3></p>
+        <p>Gift Voucher Code : <h3 style="font-weight: 600;"><%= code %></h3></p>
+        <p>Gift Voucher PIN : <h3 style="font-weight: 600;"><%= pin %></h3></p>
+        <p>Message : <%= msg %></p>
+        <p>From <%= from %></p>
+        <p>Regards,<br>Team EazyBus</p>
+        <a style="color: #ffffff;" href="https://eazybus-production.up.railway.app/addgiftcard" class="button">Redeem Voucher</a>
+    </div>
+</body>
+
+</html>
