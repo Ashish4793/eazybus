@@ -506,7 +506,7 @@ app.get('/auth/google/callback',  passport.authenticate('google', { failureRedir
             res.redirect("/onboarding");
         } else {
             // Existing user, redirect to home page
-            res.redirect('/');
+            res.redirect('/sign-in-success');
         }
     });
 
@@ -2248,7 +2248,7 @@ app.get("/paymentsuccess=q?", (req, res) => {
                                                             if (err) {
                                                               console.error('Error uploading to S3:', err);
                                                             } else {
-                                                              console.log('Invoice uploaded successfully:', data.Location);
+                                                              // invoice upload success to s3
                                                             }
                                                           });
                                                         })
