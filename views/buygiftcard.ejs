@@ -117,15 +117,16 @@
                         <div style="display: inline-block; margin-bottom: 1rem;" class="btn-group" role="group"
                             aria-label="Denomination Buttons">
                             <button type="button" id="500btn" class="btn btn-outline-warning btn-sm shadow-sm"
-                                onclick="updateDenomination(500)">₹500</button>
+                                onclick="updateDenomination(500); onButtonAmountClick();">₹500</button>
                             <button type="button" id="1000btn" class="btn btn-outline-warning active btn-sm shadow-sm"
-                                onclick="updateDenomination(1000)">₹1000</button>
+                                onclick="updateDenomination(1000); onButtonAmountClick();">₹1000</button>
                             <button type="button" id="2000btn" class="btn btn-outline-warning btn-sm shadow-sm"
-                                onclick="updateDenomination(2000)">₹2000</button>
+                                onclick="updateDenomination(2000); onButtonAmountClick();">₹2000</button>
                         </div>
-                        <input onchange="getHeading()" name="faceValue" style="margin-bottom: 15px;" type="number" max="5000" min="500"
+                        <input onchange="getHeading(); checkAmount();" name="faceValue" style="margin-bottom: 7px;" type="number" max="5000" min="500"
                             class="form-control form-control-lg shadow-sm" required  
                             id="amountBox">
+                        <label id="amountWarning" style="color: rgb(232, 9, 9); margin-bottom: 5px; font-size: 13px; display: none;" for="">Amount should be between 500 - 5000</label>
                         <label style="margin-bottom: 7px;">Receiver's Name</label>
                         <input style="margin-bottom: 7px;" name="name" required type="text" id="name" minlength="2" maxlength="20"
                             class="form-control form-control-lg shadow-sm">
@@ -172,6 +173,18 @@
         <!-- Template Main JS File -->
         <script src="assets/js/main.js"></script>
         <script>
+            function checkAmount(){
+                const amount = document.getElementById("amountBox").value;
+                const amountInt = parseInt(amount);
+                if (amountInt < 500 || amountInt > 5000){
+                    $("#amountWarning").show();
+                } else {
+                    $("#amountWarning").hide();
+                }
+            }
+            function onButtonAmountClick(){
+                $("#amountWarning").hide();
+            }
             document.addEventListener("DOMContentLoaded", function () {
                 var userInput = "&#8377;" + 1000
                 document.getElementById("amount").innerHTML = userInput
