@@ -3,16 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eazy</title>
+    <title>EazyBus</title>
+	<link href="../assets/img/favicon.png" rel="icon">
+	<link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Montserrat:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+        rel="stylesheet">
+	<script src="https://kit.fontawesome.com/3ea55f06b5.js" crossorigin="anonymous"></script>
 </head>
 <style>
     body, p, h1 {
 	 margin: 0;
 	 padding: 0;
-	 font-family: "Open Sans", sans-serif;
+	 font-family: 'Poppins', sans-serif;
 }
  .container {
-	 background: #e0e2e8;
+	 background: #ffffff;
 	 position: relative;
 	 width: 100%;
 	 height: 100vh;
@@ -28,15 +33,15 @@
 }
  .airline {
 	 display: block;
-	 height: 575px;
-	 width: 270px;
+	 height: 630px;
+	 width: 350px;
 	 box-shadow: 5px 5px 30px rgba(0, 0, 0, 0.3);
 	 border-radius: 25px;
 	 z-index: 3;
 }
  .airline .top {
-	 height: 220px;
-	 background: #ffcc05;
+	 height: 230px;
+	 background: #1acc8d;
 	 border-top-right-radius: 25px;
 	 border-top-left-radius: 25px;
 }
@@ -51,7 +56,7 @@
 	 transform: translateX(-50%);
 }
  .airline .bottom {
-	 height: 355px;
+	 height: 410px;
 	 background: #fff;
 	 border-bottom-right-radius: 25px;
 	 border-bottom-left-radius: 25px;
@@ -64,7 +69,7 @@
 	 line-height: 0.8;
 }
  .top .big .from {
-	 color: #ffcc05;
+	 color: white;
 	 text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000;
 }
  .top .big .to {
@@ -107,6 +112,8 @@
 	 font-weight: 400;
 	 font-size: 11px;
 	 color: #6c6c6c;
+	 margin-bottom: 5px;
+
 }
  .bottom .column {
 	 margin: 0 auto;
@@ -137,8 +144,8 @@
 	 height: 1px;
 }
  .bottom .bar--code {
-	 height: 50px;
-	 width: 80%;
+	 height: 60px;
+	 width: 62%;
 	 margin: 0 auto;
 	 position: relative;
 }
@@ -176,7 +183,65 @@
 	 color: #000;
 	 background: #ffcc05;
 }
- 
+
+@media print
+{    
+    .no-print, .no-print *
+    {
+        display: none !important;
+    }
+}
+
+/* CSS */
+.button-4 {
+  appearance: none;
+  background-color: #FAFBFC;
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+  box-sizing: border-box;
+  color: #24292E;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  list-style: none;
+  padding: 6px 16px;
+  position: relative;
+  transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  white-space: nowrap;
+  word-wrap: break-word;
+}
+
+.button-4:hover {
+  background-color: #F3F4F6;
+  text-decoration: none;
+  transition-duration: 0.1s;
+}
+
+.button-4:active {
+  background-color: #EDEFF2;
+  box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
+  transition: none 0s;
+}
+
+.button-4:focus {
+  outline: 1px transparent;
+}
+
+.button-4:before {
+  display: none;
+}
+
+.button-4:-webkit-details-marker {
+  display: none;
+}
 </style>
 <body>
     <div class="container">
@@ -187,40 +252,34 @@
       
         <div class="ticket airline">
           <div class="top">
-            <h1>boarding pass</h1>
+			
+			<h1 style="text-align: center; font-size: 16px; text-transform: lowercase;"><i class="fa-solid fa-bus"></i> m-Ticket</h1>
             <div class="big">
-              <p class="from">BWI</p>
-              <p class="to"><i class="fas fa-arrow-right"></i> SAN</p>
-            </div>
-            <div class="top--side">
-              <i class="fas fa-plane"></i>
-              <p>Baltimore</p>
-              <p>San Diego</p>
+              <p style="font-size: 2rem; margin-left: 5rem; margin-bottom: 10px;" class="from">INDORE</p>
+              <p style="margin-left: 5rem;" class="to"><i class="fas fa-arrow-right"></i> MUMBAI</p>
             </div>
           </div>
           <div class="bottom">
             <div class="column">
               <div class="row row-1">
-                <p><span>Flight</span>AA2005</p>
-                <p class="row--right"><span>Gate</span>B3</p>
+				<p style="color: #1acc8d;"><span style="color: #000;">Booking ID </span>EZB1929299</p>
+                <p><span>Service No</span>IDRMUM2015</p>
+                <p class="row--right"><span>Journey Date</span>25-04-2023</p>
               </div>
               <div class="row row-2">
-                <p><span>Boards</span>10:25 AM</p>
-                <p class="row--center"><span>Departs</span>11:00 AM</p>
-                <p class="row--right"><span>Arrives</span>1:05 PM</p>
+                <p><span>Boarding Point</span>EazyBus Lounge - Mumbai</p><br>
+				<p class="row--center"><span>Departs</span>11:00 AM</p>
               </div>
               <div class="row row-3">
-                <p><span>Passenger</span>Jesus Ramirez</p>
-                <p class="row--center"><span>Seat</span>11E</p>
-                <p class="row--right"><span>Group</span>3</p>
+                <p><span>Passenger</span>Ashish Kumar</p>
+                <p class="row--right"><span>Seats</span>1A,1B,1C</p>
               </div>
             </div>
             <div class="bar--code"></div>
+			<div style="text-align: center; margin-top: 1.5rem;">
+				<button style="text-align: center;" class="button-4 no-print"><i class="fa-solid fa-print fa-sm"></i> Print Ticket</button>
+			</div>
           </div>
-        </div>
-      
-        <div class="info">
-          <p>Based on <a href="https://dribbble.com/shots/11399236-Boarding-Pass" target="_blank">this</a> Dribbble from Barna Erdei</p>
         </div>
       
       </div>

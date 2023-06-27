@@ -187,7 +187,6 @@ const GiftCard = mongoose.model("GiftCard" , giftCardSchema);
 // function to generate Invoice
 
 async function generateInvoice(booking , user) {
-    // const browser = await puppeteer.launch();
     var browser = await puppeteer.launch({
         args: [
         '--ignore-certificate-errors',
@@ -747,12 +746,37 @@ app.get("/bookings/:bookingID", function (req, res) {
     }
 });
 
-app.get("/download-ticket/:bookingID", function (req, res) {
+app.get("/download-ticket/:bookingID", async  function (req, res) {
     if (req.isAuthenticated()) {
-        Booking.findOne({ bookingID: req.params.bookingID, bookingStatus: "paid" }, function (err, foundBooking) {
+        Booking.findOne({ bookingID: req.params.bookingID, bookingStatus: "paid" }, async function (err, foundBooking) {
             if (!err) {
                 if (foundBooking != null) {
-                    res.render("mticket", { foundBooking: foundBooking });
+                    const templateData = {
+                        foundBooking : foundBooking
+                      };
+                      const renderedHtml = await ejs.renderFile('mticket.ejs', templateData);
+                    
+                      // Generate PDF using Puppeteer
+                      var browser = await puppeteer.launch({
+                          args: [
+                          '--ignore-certificate-errors',
+                          '--no-sandbox',
+                          '--disable-setuid-sandbox',
+                          '--window-size=1920,1080',
+                          "--disable-accelerated-2d-canvas",
+                          "--disable-gpu"],
+                          ignoreHTTPSErrors: true,
+                          headless: true,
+                      });
+                      const page = await browser.newPage();
+                      await page.setContent(renderedHtml);
+                      const pdfBuffer = await page.pdf({ format: 'A4' });
+                      await browser.close();
+                    
+                      // Set response headers for file download
+                      res.setHeader('Content-Disposition', 'attachment; filename="mTicket.pdf"');
+                      res.setHeader('Content-Type', 'application/pdf');
+                      res.send(pdfBuffer);
                 } else {
                     res.redirect("/bookings")
                 }
@@ -1742,6 +1766,11 @@ app.post("/back", function (req, res) {
     } else {
         res.redirect("/");
     }
+});
+
+app.get('/download-pdf', async (req, res) => {
+    // Render the EJS template with custom data
+   
 });
 
 app.post("/backtoseat", function (req, res) {
