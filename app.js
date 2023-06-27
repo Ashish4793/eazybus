@@ -1723,7 +1723,7 @@ app.post("/back", function (req, res) {
                         if (!err) {
                             Service.find({ origin: foundService.origin, destination: foundService.destination, service_date: foundDetails.date }, function (err, foundBuses) {
                                 if (!err) {
-                                    res.render("options", { foundBuses: foundBuses, ct: "", origin: foundService.origin, destination: foundService.destination, date: foundDetails.date });
+                                    res.render("options", { foundBuses: foundBuses, ct: "", origin: foundService.origin, destination: foundService.destination, date: foundDetails.date  , loggedIn : true});
                                 } else {
                                     console.log(err);
                                 }

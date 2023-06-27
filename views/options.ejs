@@ -67,7 +67,11 @@
     </div>
   </header><!-- End Header -->
 
-
+<style>
+  .amen{
+    margin: 0px 3px;
+  }
+</style>
 
   <!-- START #main -->
   <main style="margin-bottom: 7rem;" id="main">
@@ -246,8 +250,7 @@
                                                       </span>
                                                     </p>
                                                     <span
-                                                      style="font-size: 1.5rem; font-weight: 600; float: right;">&#8377;
-                                                      <%= bus.fare %>
+                                                      style="font-size: 1.5rem; font-weight: 600; float: right;">&#8377;<%= bus.fare %>
                                                     </span>
                                                     <form action="/seatchoose" method="post">
                                                       <input name="g_service_no" type="hidden"
@@ -270,6 +273,7 @@
                                                                 out!</span>
                                                               <% } %>
                                                                 <% } %>
+                                                              <span style="margin-left: 10px;"><i class="amen fa-solid fa-wifi fa-sm"></i> <i class="amen fa-solid fa-plug-circle-bolt fa-sm"></i> <i class="amen fa-solid fa-bottle-water fa-sm"></i></span>
                                                     </form>
                                               </div>
                                         </div>
