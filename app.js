@@ -254,8 +254,6 @@ const transporter = nodemailer.createTransport({
 });
 
 
-
-
 function getCurrentTime() {
     const now = DateTime.now().setZone('Asia/Kolkata').plus({ minutes: 25 });
     let hour = now.hour.toString();
@@ -1768,10 +1766,6 @@ app.post("/back", function (req, res) {
     }
 });
 
-app.get('/download-pdf', async (req, res) => {
-    // Render the EJS template with custom data
-   
-});
 
 app.post("/backtoseat", function (req, res) {
     if (req.isAuthenticated()) {
