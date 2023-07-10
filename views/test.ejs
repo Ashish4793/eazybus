@@ -97,6 +97,8 @@
     .not-show {
         border: none;
     }
+
+    .toast { opacity: 10 !important; }
 </style>
 
 <body>
@@ -142,6 +144,31 @@
                             style="color: #000000;"></i>Go Back</button>
                     </form> 
                 </div>
+                <div style="margin-top: 6rem;" class="toast-container position-fixed top-0 start-50 translate-middle-x">
+  <div id="maxSeat" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
+    <div class="toast-header">
+        <i class="fa-solid fa-circle-exclamation" style="color: #e00b0b; margin-right: 10px;"></i>
+      <strong style="color: #e00b0b;" class="me-auto">Max Seat Alert!</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      Max 6 seats allowed per booking
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 6rem;" class="toast-container position-fixed top-0 start-50 translate-middle-x">
+    <div id="minSeat" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
+      <div class="toast-header">
+          <i class="fa-solid fa-circle-exclamation" style="color: #ffd000; margin-right: 10px;"></i>
+        <strong style="color: #ffd000;" class="me-auto">Choose a seat!</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body">
+        Select atleast 1 seat to proceed
+      </div>
+    </div>
+</div>
                 <h1 style="margin-bottom: 1rem; font-weight: 600;" class="text-center">Select Seats</h1>
                 <div style="margin-bottom: 10px; margin-left: 15rem; margin-top: 2rem;"
                     class="d-flex align-items-center justify-content-center">
@@ -265,13 +292,13 @@
                         seat.classList.add('selected');
                         // Add the seat to the selected seats array
                         selectedSeats.push(seat.getAttribute('data-seat'));
+                        navigator.vibrate(100);
                     } else {
                         // Display an alert if the maximum limit is reached and user tries to select more seats
-                        Swal.fire(
-                            'Max 6 seats allowed per booking',
-                            '',
-                            'error'
-                        )
+                        navigator.vibrate(100);
+                        const toastLiveExample = document.getElementById('maxSeat')
+                        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
+                        toastBootstrap.show();
                     }
                 }
 
@@ -305,15 +332,14 @@
                 document.getElementById('selectedSeatsInput').value = JSON.stringify(seatNumbers);
 
                 // Submit the form
-                console.log(seatNumbers.length)
                 if (seatNumbers.length >= 1) {
                     document.getElementById('bookingForm').submit();
+                    navigator.vibrate(100);
                 } else {
-                    Swal.fire(
-                        'Select atleast 1 seat',
-                        '',
-                        'warning'
-                    )
+                    navigator.vibrate(120);
+                    const toastLiveExample = document.getElementById('minSeat')
+                    const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
+                    toastBootstrap.show();
                 }
             }
 

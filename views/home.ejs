@@ -170,7 +170,7 @@
               </div>
               <div style="border-radius: 20px; background-color: rgba(2, 5, 161, 0.91);"
                 class="container homeBookForm booking-form">
-                <form onsubmit="saveCookies()" id="form" action="/search=q?" method="post">
+                <form onsubmit="saveCookies(); vibrate();" id="form" action="/search=q?" method="post">
                   <div class="row no-margin">
                     <div class="col-md-3">
                       <div class="form-group">
@@ -210,7 +210,7 @@
                             <span class="form-label">Departure Date</span>
                             <input readonly="true" autocomplete="off" class="form-control"
                               style="width: 100%; padding-left: 10px; padding-right: 10px;" name="d_date" type="text"
-                              id="datepicker" required oninvalid="this.setCustomValidity('Please choose a date')"
+                              id="datepicker" onchange="vibrate()" required oninvalid="this.setCustomValidity('Please choose a date')"
                               oninput="setCustomValidity('')">
                           </div>
                         </div>
@@ -570,7 +570,12 @@
         return false;
       }
 
+      function vibrate(){
+        navigator.vibrate(100);
+      }
+
       function verify() {
+        vibrate();
         let a = document.getElementById("origin").value;
         let b = document.getElementById("destination").value;
         if (a === b) {

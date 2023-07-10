@@ -92,7 +92,7 @@
       </div>
       <div style="margin-top: 2rem;" class="row justify-content-center">
         <div style="background-color: rgba(2, 5, 161, 0.91);;" class="bus_info booking-form">
-          <form onsubmit="saveCookies()" action="/search=q?" method="post">
+          <form onsubmit="saveCookies(); vibrate();" action="/search=q?" method="post">
             <div class="row no-margin">
               <div class="col-md-3">
                 <div class="form-group">
@@ -181,7 +181,7 @@
                       <span class="form-label">Departure Date</span>
                       <input readonly="true" class="form-control"
                         style="width: 100%; padding-left: 10px; padding-right: 10px;" name="d_date" autocomplete="off"
-                        type="text" id="datepicker" required value="<%= date %>"
+                        type="text" id="datepicker" onchange="vibrate()" required value="<%= date %>"
                         oninvalid="this.setCustomValidity('Please choose a date')" oninput="setCustomValidity('')">
                     </div>
                   </div>
@@ -262,7 +262,7 @@
                                                     <span
                                                       style="font-size: 1.5rem; font-weight: 600; float: right;">&#8377;<%= bus.fare %>
                                                     </span>
-                                                    <form action="/seatchoose" method="post">
+                                                    <form onsubmit="vibrate()" action="/seatchoose" method="post">
                                                       <input name="g_service_no" type="hidden"
                                                         value="<%= bus.service_no %>">
                                                       <input name="g_service_id" type="hidden" value="<%= bus._id %>">
@@ -352,7 +352,11 @@
           theme: 'bootstrap4',
         });
       });
+      function vibrate(){
+        navigator.vibrate(100);
+      }
       function verify() {
+        vibrate();
         let a = document.getElementById("origin").value;
         let b = document.getElementById("destination").value;
         if (a === b) {

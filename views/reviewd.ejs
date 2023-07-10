@@ -204,7 +204,7 @@
                                                                                 Total Fare: &#8377;<%=
                                                                                     details.bill_amount %>
                                                                             </h4>
-                                                                            <form action="/paymentform"
+                                                                            <form onsubmit="vibrate()" action="/paymentform"
                                                                                 method="post">
                                                                                 <button type="submit"
                                                                                     class="btn btn-success">Proceed to
@@ -241,6 +241,9 @@
         <!-- Template Main JS File -->
         <script src="assets/js/main.js"></script>
         <script>
+            function vibrate(){
+                navigator.vibrate(100);
+            }
             function subscribeClick(e) {
                 e.preventDefault();
                 document.getElementById("subscribe_form").reset();

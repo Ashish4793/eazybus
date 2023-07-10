@@ -120,13 +120,13 @@
                                         <img style="margin-bottom: 3px;" width="20" height="20"
                                             src="https://img.icons8.com/color/20/000000/user-male.png"
                                             alt="user-male" />
-                                        <input onclick="validateForm()" type="radio" name="pax_gender" value="Male"> Male
+                                        <input onclick="validateForm(); vibrate();" type="radio" name="pax_gender" value="Male"> Male
                                     </label>
                                     <label class="btn btn-sm btn-outline-primary">
                                         <img style="margin-bottom: 3px;" width="20" height="20"
                                             src="https://img.icons8.com/color/20/000000/user-female.png"
                                             alt="user-female" />
-                                        <input onclick="validateForm()" type="radio" name="pax_gender" value="Female"> Female
+                                        <input onclick="validateForm(); vibrate();" type="radio" name="pax_gender" value="Female"> Female
                                     </label>
                                 </div>
                             </div>
@@ -160,7 +160,7 @@
                     oninput="setCustomValidity('')" -->
 
                             <div class="text-center subBtn">
-                                <button
+                                <button onclick="vibrate()"
                                     style="background-color: #01036f; border: none; width: 10rem; margin-top: 1.5rem;"
                                     type="submit" class="btn btn-primary">Review Details</button>
                             </div>
@@ -195,6 +195,10 @@
         <!-- Template Main JS File -->
         <script src="assets/js/main.js"></script>
         <script>
+            function vibrate(){
+                navigator.vibrate(100);
+            }
+            
             $(document).ready(function () {
                 $('.btn-group-toggle .btn').click(function () {
                     $('.btn-group-toggle .btn').removeClass('active');

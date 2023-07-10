@@ -77,12 +77,12 @@
 									</label>
 									<div style="margin-top: 1rem;" class="flex gap-x-6">
 										<div class="flex">
-										  <input required type="radio" name="gender" value="Male" class="shrink-0 mt-0.5 border-gray-200 rounded-full text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-radio-group-1">
+										  <input onclick="vibrate()" required type="radio" name="gender" value="Male" class="shrink-0 mt-0.5 border-gray-200 rounded-full text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-radio-group-1">
 										  <label for="gender" class="text-sm text-gray-500 ml-2 dark:text-gray-400">Male</label>
 										</div>
 									  
 										<div class="flex">
-										  <input required type="radio" name="gender" value="Female" class="shrink-0 mt-0.5 border-gray-200 rounded-full text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-radio-group-3">
+										  <input onclick="vibrate()" required type="radio" name="gender" value="Female" class="shrink-0 mt-0.5 border-gray-200 rounded-full text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-radio-group-3">
 										  <label for="gender" class="text-sm text-gray-500 ml-2 dark:text-gray-400">Female</label>
 										</div>
 									</div>
@@ -104,13 +104,13 @@
 									<div class="flex items-start">
 									</div>
 								</div>
-								<button type="submit"
+								<button onclick="vibrate()" type="submit"
 									class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Create
 									Account</button>
 								<hr class="h-px my-8 bg-black border-0 dark:bg-gray-900">
 								<div class="flex flex-col items-center justify-center">
 									<a href="/auth/google">
-										<button type="button"
+										<button onclick="vibrate()" type="button"
 											class="text-white bg-[#2c2c2c] hover:bg-[#1f1f1f]/90 focus:ring-4 focus:outline-none focus:ring-[#24292F]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-gray-500 dark:hover:bg-[#050708]/30 mr-2 mb-2">
 											<img style="margin-right: 6px;" width="23px"
 												src="https://img.icons8.com/color/35/000000/google-logo.png"
@@ -121,7 +121,7 @@
 								</div>
 
 								<p class="text-sm font-light text-gray-500 dark:text-gray-400">
-									Already a user? <a href="/login"
+									Already a user? <a onclick="vibrate()" href="/login"
 										class="font-medium text-primary-600 hover:underline dark:text-primary-500">Login</a>
 								</p>
 							</form>
@@ -151,7 +151,9 @@
 	});
 
 
-
+	function vibrate(){
+		navigator.vibrate(100);
+	}
 
 	$(function () {
 		setTimeout(function () { $("#uaxAlert").fadeOut(1000); }, 6000)

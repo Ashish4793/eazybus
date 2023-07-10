@@ -170,7 +170,7 @@
                                                                 Home</button>
 
 
-                                                            <form id="paymentForm" action="#" method="POST">
+                                                            <form onsubmit="vibrate()" id="paymentForm" action="#" method="POST">
                                                                 <div class="d-block my-3 myDiv">
                                                                     <div style="margin-top: 2rem;" class="row">
                                                                         <div class="col">
@@ -178,7 +178,7 @@
                                                                                 data-toggle="buttons">
                                                                                 <label
                                                                                     class="btn btn-outline-dark btn-payment">
-                                                                                    <input onclick="myFunction()"
+                                                                                    <input onclick="myFunction(); vibrate();"
                                                                                         type="radio"
                                                                                         name="paymentMethod"
                                                                                         value="create-checkout-session"
@@ -221,7 +221,7 @@
                                                                                             <label
                                                                                                 class="btn btn-outline-dark btn-payment">
                                                                                                 <input
-                                                                                                    onclick="myFunction()"
+                                                                                                    onclick="myFunction(); vibrate();"
                                                                                                     type="radio"
                                                                                                     name="paymentMethod"
                                                                                                     value="checkout-wallet"
@@ -303,6 +303,9 @@
         <!-- Template Main JS File -->
         <script src="assets/js/main.js"></script>
         <script>
+            function vibrate(){
+		navigator.vibrate(100);
+	}
             // Set the timer duration to 6 minutes (in seconds)
             const duration = 6 * 60;
 
