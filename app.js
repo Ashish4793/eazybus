@@ -64,8 +64,8 @@ AWS.config.update({
 //razorpay initialize
 
 const razorpay = new Razorpay({
-    key_id: 'rzp_test_L3nzVsRtormDfp',
-    key_secret: 'f22ANju8dVQFHBB2Myedbzip',
+    key_id: process.env.RAZORPAY_KEY,
+    key_secret: process.env.RAZORPAY_SECRET,
 });
 
 app.use(passport.initialize());
@@ -2258,7 +2258,7 @@ app.post('/payment-callback', (req, res) => {
     const gotOrderId = req.body.razorpay_order_id;
     const paymentId = req.body.razorpay_payment_id;
     const receivedSignature = req.body.razorpay_signature;
-    const secret = 'f22ANju8dVQFHBB2Myedbzip';
+    const secret = process.env.RAZORPAY_SECRET;
 
 
     Booking.findOne({ RzpOrderID: gotOrderId }, function (err, foundBooking) {
