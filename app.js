@@ -6,6 +6,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const ejs = require("ejs");
+const crypto = require('crypto');
 const puppeteer = require('puppeteer');
 const AWS = require('aws-sdk');
 const cookieParser = require('cookie-parser');
@@ -21,11 +22,13 @@ const fs = require('fs');
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
 const generateUniqueId = require('generate-unique-id');
+const Razorpay = require("razorpay");
 const stripe = require('stripe')(process.env.STRIPE_KEY);
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
 const { log } = require('console');
 const { type } = require('os');
+const DOMAIN = process.env.DOMAIN;
 
 passport.serializeUser(function (user, done) {
     done(null, user);
@@ -39,6 +42,7 @@ app.use(cookieParser());
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
 app.use(session({
     secret: process.env.SESSION_KEY,
     resave: false,
@@ -55,6 +59,13 @@ app.use(session({
 AWS.config.update({
     accessKeyId: process.env.AWS_ID,
     secretAccessKey: process.env.AWS_SECRET
+});
+
+//razorpay initialize
+
+const razorpay = new Razorpay({
+    key_id: 'rzp_test_L3nzVsRtormDfp',
+    key_secret: 'f22ANju8dVQFHBB2Myedbzip',
 });
 
 app.use(passport.initialize());
@@ -90,8 +101,9 @@ userSchema.plugin(findOrCreate);
 const bookingSchema = new mongoose.Schema({
     userID: String,
     bookingID: { type: String, unique: true },
+    RzpOrderID: { type: String, unique: true },
     transactionID: { type: String, unique: true },
-    paymentMethod: { type: String, default: "stripe" },
+    paymentMethod: { type: String, default: "Razorpay" },
     bookingDate: String,
     bookingTime: String,
     bookingStatus: String,
@@ -163,16 +175,16 @@ const walletTransactionSchema = new mongoose.Schema({
 });
 
 const giftCardSchema = new mongoose.Schema({
-    userID : String,
-    cardID : {type : String , unique : true},
-    cardPin : String,
-    faceValue : Number,
-    recName : String,
-    recEmail : String,
-    recMsg : String,
-    status : {type : String , enum : ['open' ,'redeemed'] , default : "open"},
-    paymentID : {type : String , default : "null"},
-    paymentStatus : {type : String , enum : ['initiated' , 'completed'] , default : "initiated"}
+    userID: String,
+    cardID: { type: String, unique: true },
+    cardPin: String,
+    faceValue: Number,
+    recName: String,
+    recEmail: String,
+    recMsg: String,
+    status: { type: String, enum: ['open', 'redeemed'], default: "open" },
+    paymentID: { type: String, default: "null" },
+    paymentStatus: { type: String, enum: ['initiated', 'completed'], default: "initiated" }
 });
 
 const User = mongoose.model("User", userSchema);
@@ -182,40 +194,40 @@ const Booking = mongoose.model("Booking", bookingSchema);
 const Otp = mongoose.model("Otp", otpSchema);
 const Wallet = mongoose.model("Wallet", walletSchema);
 const WalletTransaction = mongoose.model("WalletTransaction", walletTransactionSchema);
-const GiftCard = mongoose.model("GiftCard" , giftCardSchema);
+const GiftCard = mongoose.model("GiftCard", giftCardSchema);
 
 // function to generate Invoice
 
-async function generateInvoice(booking , user) {
+async function generateInvoice(booking, user) {
     var browser = await puppeteer.launch({
         args: [
-        '--ignore-certificate-errors',
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--window-size=1920,1080',
-        "--disable-accelerated-2d-canvas",
-        "--disable-gpu"],
+            '--ignore-certificate-errors',
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--window-size=1920,1080',
+            "--disable-accelerated-2d-canvas",
+            "--disable-gpu"],
         ignoreHTTPSErrors: true,
         headless: true,
     });
     const page = await browser.newPage();
     const template = fs.readFileSync('invoicetemp.ejs', 'utf8');
-  
+
     // Define custom data to be rendered
     const data = {
-      booking : booking,
-      user : user
+        booking: booking,
+        user: user
     };
-  
+
     const html = ejs.render(template, data);
-  
+
     await page.setContent(html, { waitUntil: 'networkidle0' });
-  
+
     // Generate PDF from the page
     const pdfBuffer = await page.pdf();
-  
+
     await browser.close();
-  
+
     return pdfBuffer;
 }
 
@@ -424,24 +436,58 @@ function transactionCheck() {
     Booking.find({ bookingStatus: "initiated" }, function (err, foundBookings) {
         if (!err) {
             foundBookings.forEach(function (booking) {
-                stripe.checkout.sessions.retrieve(booking.transactionID, (err, session) => {
-                    if (!err) {
-                        if (session.payment_status === "paid") {
-                            Booking.findOneAndUpdate({ bookingID: booking.bookingID }, { bookingStatus: "paid" }, function (err) {
-                                if (!err) {
-                                    // booking updated succesfully
-                                } else {
-                                    console.log(err);
+                if (booking.transactionID === "NA") {
+                    razorpay.orders.fetchPayments(booking.RzpOrderID)
+                        .then(payment => {
+                            const items = payment.items;
+
+                            let capturedItem = null;
+
+                            for (const item of items) {
+                                if (item.status === "captured") {
+                                    capturedItem = item;
+                                    break;
                                 }
-                            });
-                        } else {
-                            // do nothing
-                        }
-                    } else {
-                        console.log(err);
-                    }
-                });
+                            }
+
+                            if (capturedItem) {
+                                Booking.findOneAndUpdate({ bookingID: booking.bookingID }, { bookingStatus: "paid", transactionID: capturedItem.id }, function (err) {
+                                    if (!err) {
+                                        // booking updated succesfully
+                                    } else {
+                                        console.log(err);
+                                    }
+                                });
+                            } else {
+                                // console.log("No captured item found.");
+                            }
+                        })
+                        .catch(error => {
+                            console.error('An error occurred:', error);
+                        });
+
+                } else {
+                    razorpay.payments.fetch(booking.transactionID)
+                        .then(payment => {
+                            if (payment.status === "captured") {
+                                Booking.findOneAndUpdate({ bookingID: booking.bookingID }, { bookingStatus: "paid" }, function (err) {
+                                    if (!err) {
+                                        // booking updated succesfully
+                                    } else {
+                                        console.log(err);
+                                    }
+                                });
+                            } else {
+                                // do nothing
+                            }
+                        })
+                        .catch(error => {
+                            console.error('An error occurred:', error);
+                        });
+                }
             });
+        } else {
+            console.log(err);
         }
     });
 }
@@ -496,7 +542,7 @@ function deletePrevDayService(date) {
 app.get('/auth/google',
     passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'], prompt: 'select_account' }));
 
-app.get('/auth/google/callback',  passport.authenticate('google', { failureRedirect: '/uaxerror' }),
+app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/uaxerror' }),
     function (req, res) {
         if (req.user && req.user.wasNew) {
             // New user, redirect to user onboarding page
@@ -686,7 +732,7 @@ app.get("/", function (req, res) {
         if (req.user.verified === false) {
             res.render("onboarding", { err: false });
         } else {
-            User.findOne({_id : req.user._id} , function(err , foundUser){
+            User.findOne({ _id: req.user._id }, function (err, foundUser) {
                 if (!err) {
                     const [name] = foundUser.name.split(' ');
                     res.render("home", { loggedIn: true, name: name, user_gender: foundUser.gender });
@@ -744,37 +790,37 @@ app.get("/bookings/:bookingID", function (req, res) {
     }
 });
 
-app.get("/download-ticket/:bookingID", async  function (req, res) {
+app.get("/download-ticket/:bookingID", async function (req, res) {
     if (req.isAuthenticated()) {
         Booking.findOne({ bookingID: req.params.bookingID, bookingStatus: "paid" }, async function (err, foundBooking) {
             if (!err) {
                 if (foundBooking != null) {
                     const templateData = {
-                        foundBooking : foundBooking
-                      };
-                      const renderedHtml = await ejs.renderFile('mticket.ejs', templateData);
-                    
-                      // Generate PDF using Puppeteer
-                      var browser = await puppeteer.launch({
-                          args: [
-                          '--ignore-certificate-errors',
-                          '--no-sandbox',
-                          '--disable-setuid-sandbox',
-                          '--window-size=1920,1080',
-                          "--disable-accelerated-2d-canvas",
-                          "--disable-gpu"],
-                          ignoreHTTPSErrors: true,
-                          headless: true,
-                      });
-                      const page = await browser.newPage();
-                      await page.setContent(renderedHtml);
-                      const pdfBuffer = await page.pdf({ format: 'A4' });
-                      await browser.close();
-                    
-                      // Set response headers for file download
-                      res.setHeader('Content-Disposition', 'attachment; filename="mTicket.pdf"');
-                      res.setHeader('Content-Type', 'application/pdf');
-                      res.send(pdfBuffer);
+                        foundBooking: foundBooking
+                    };
+                    const renderedHtml = await ejs.renderFile('mticket.ejs', templateData);
+
+                    // Generate PDF using Puppeteer
+                    var browser = await puppeteer.launch({
+                        args: [
+                            '--ignore-certificate-errors',
+                            '--no-sandbox',
+                            '--disable-setuid-sandbox',
+                            '--window-size=1920,1080',
+                            "--disable-accelerated-2d-canvas",
+                            "--disable-gpu"],
+                        ignoreHTTPSErrors: true,
+                        headless: true,
+                    });
+                    const page = await browser.newPage();
+                    await page.setContent(renderedHtml);
+                    const pdfBuffer = await page.pdf({ format: 'A4' });
+                    await browser.close();
+
+                    // Set response headers for file download
+                    res.setHeader('Content-Disposition', 'attachment; filename="mTicket.pdf"');
+                    res.setHeader('Content-Type', 'application/pdf');
+                    res.send(pdfBuffer);
                 } else {
                     res.redirect("/bookings")
                 }
@@ -790,18 +836,18 @@ app.get("/download-ticket/:bookingID", async  function (req, res) {
 app.get("/download-taxinvoice", function (req, res) {
     if (req.isAuthenticated()) {
         const bookingId = req.query.bookingId;
-        Booking.findOne({bookingID : bookingId} , function(err , foundBooking){
+        Booking.findOne({ bookingID: bookingId }, function (err, foundBooking) {
             if (!err) {
                 if (foundBooking.userID === req.user._id) {
                     const s3 = new AWS.S3();
                     const bucketName = process.env.AWS_BUCKET_NAME;
-                    const fileName = 'invoices/'+ bookingId + '.pdf';
+                    const fileName = 'invoices/' + bookingId + '.pdf';
                     const params = {
                         Bucket: bucketName,
                         Key: fileName
                     };
                     res.attachment(fileName);
-                    const fileStream = s3.getObject(params).createReadStream();  
+                    const fileStream = s3.getObject(params).createReadStream();
                     fileStream.pipe(res);
                 } else {
                     res.redirect("/bookings");
@@ -1074,7 +1120,41 @@ app.post("/cancellation", function (req, res) {
                                                         }
                                                     });
                                             } else {
-                                                res.render("bookingcancelmsg", { bookingID: req.body.bookingID, refundAmt: refundAmount });
+                                                razorpay.payments.refund(foundBooking.transactionID, {
+                                                    "amount": refundAmount * 100,
+                                                    "speed": "optimum",
+                                                    "notes": {
+                                                        "Booking ID": foundBooking.bookingID,
+                                                    }
+                                                })
+                                                    .then(refundResponse => {
+                                                        res.render("bookingcancelmsg", { bookingID: req.body.bookingID, refundAmt: refundAmount });
+                                                        const template = fs.readFileSync('email-temps/refundtemplate.ejs', 'utf8');
+                                                        const data = {
+                                                            name: foundUser.name,
+                                                            bookingID : foundBooking.bookingID,
+                                                            refundID : refundResponse.id,
+                                                            amount : refundAmount
+                                                        };
+                                                        const html = ejs.render(template, data);
+                                                        const mailOptions = {
+                                                            from: process.env.MAIL_ID,
+                                                            to: foundUser.email,
+                                                            subject: 'Refund Initiated',
+                                                            html: html
+                                                        };
+                                                        transporter.sendMail(mailOptions, (error, info) => {
+                                                            if (error) {
+                                                                console.log('Error occurred:', error.message);
+                                                            } else {
+                                                                //mail sent successfully
+                                                            }
+                                                        });
+                                                    })
+                                                    .catch(error => {
+                                                        res.redirect("/bookings");
+                                                        console.log("Error Occured while creating Refund : " + error);
+                                                    })
                                             }
                                         }
                                     });
@@ -1105,7 +1185,7 @@ app.get("/profile", function (req, res) {
         if (req.user.verified === false) {
             res.render("onboarding", { err: false });
         } else {
-            User.findOne({_id : req.user._id} , function(err , foundUser){
+            User.findOne({ _id: req.user._id }, function (err, foundUser) {
                 if (!err) {
                     res.render("profile", { user: foundUser });
                 } else {
@@ -1348,7 +1428,7 @@ app.get("/addbalancetrue", (req, res) => {
         const sessionId = req.query.session_id; // Retrieve the session ID from the URL parameter
         stripe.checkout.sessions.retrieve(sessionId, (err, session) => {
             if (!err) {
-                if (session.payment_status === "paid"){
+                if (session.payment_status === "paid") {
                     WalletTransaction.findOne({ paymentID: req.query.session_id, status: "initiated" }, function (err, foundTransaction) {
                         if (!err) {
                             if (foundTransaction != null) {
@@ -1396,7 +1476,7 @@ app.get("/addbalancetrue", (req, res) => {
                     res.redirect(`/addbalancefalse?session_id=${sessionId}`)
                 }
             } else {
-                console.log("Error retrieving session " , err);
+                console.log("Error retrieving session ", err);
             }
         });
     } else {
@@ -1432,7 +1512,7 @@ app.get("/addgiftcard", function (req, res) {
     if (req.isAuthenticated()) {
         Wallet.findOne({ userID: req.user._id }, function (err, userWallet) {
             if (userWallet != null) {
-                res.render("addgiftcard" , {balance : userWallet.balance,success : false , err : false});
+                res.render("addgiftcard", { balance: userWallet.balance, success: false, err: false });
             } else {
                 res.redirect("/wallet");
             }
@@ -1456,19 +1536,19 @@ app.get("/buygiftcard", function (req, res) {
     }
 });
 
-app.post("/addgiftcard" , function(req,res){
-    if (req.isAuthenticated()){
-        GiftCard.findOne({cardID : req.body.id , cardPin : req.body.pin , status : "open"} , function(err , foundCard){
+app.post("/addgiftcard", function (req, res) {
+    if (req.isAuthenticated()) {
+        GiftCard.findOne({ cardID: req.body.id, cardPin: req.body.pin, status: "open" }, function (err, foundCard) {
             if (!err) {
-                if (foundCard!= null){
+                if (foundCard != null) {
                     Wallet.updateOne({ userID: foundCard.userID, },
                         { $inc: { balance: foundCard.faceValue } }, { new: true }, function (err) {
                             if (!err) {
-                                GiftCard.updateOne({_id : foundCard._id} , {status : "redeemed"} , function(err){
+                                GiftCard.updateOne({ _id: foundCard._id }, { status: "redeemed" }, function (err) {
                                     if (!err) {
-                                        Wallet.findOne({userID : req.user._id} , function(err , foundWallet){
+                                        Wallet.findOne({ userID: req.user._id }, function (err, foundWallet) {
                                             if (!err) {
-                                                res.render("addgiftcard" , {balance : foundWallet.balance , success : true ,amount : foundCard.faceValue , err : false})
+                                                res.render("addgiftcard", { balance: foundWallet.balance, success: true, amount: foundCard.faceValue, err: false })
                                             } else {
                                                 console.log(err);
                                             }
@@ -1482,9 +1562,9 @@ app.post("/addgiftcard" , function(req,res){
                             }
                         })
                 } else {
-                    Wallet.findOne({userID : req.user._id} , function(err , foundWallet){
+                    Wallet.findOne({ userID: req.user._id }, function (err, foundWallet) {
                         if (!err) {
-                            res.render("addgiftcard" , {balance : foundWallet.balance ,success : false, err : true})
+                            res.render("addgiftcard", { balance: foundWallet.balance, success: false, err: true })
                         } else {
                             console.log(err);
                         }
@@ -1528,7 +1608,7 @@ app.get("/sign-in-success", function (req, res) {
                         origin: origin,
                         destination: destination,
                         date: d_date,
-                        loggedIn : true
+                        loggedIn: true
                     });
                 })
                 .catch(error => {
@@ -1569,9 +1649,9 @@ app.post("/search=q?", (req, res) => {
         Service.find({ origin: req.body.origin, destination: req.body.destination, service_date: req.body.d_date }, function (err, foundBuses) {
             if (!err) {
                 if (d === d_date) {
-                    res.render("options", { foundBuses: foundBuses, ct: time, origin: req.body.origin, destination: req.body.destination, date: req.body.d_date , loggedIn : true });
+                    res.render("options", { foundBuses: foundBuses, ct: time, origin: req.body.origin, destination: req.body.destination, date: req.body.d_date, loggedIn: true });
                 } else {
-                    res.render("options", { foundBuses: foundBuses, ct: "", origin: req.body.origin, destination: req.body.destination, date: req.body.d_date , loggedIn : true});
+                    res.render("options", { foundBuses: foundBuses, ct: "", origin: req.body.origin, destination: req.body.destination, date: req.body.d_date, loggedIn: true });
                 }
             } else {
                 console.log(err);
@@ -1580,7 +1660,7 @@ app.post("/search=q?", (req, res) => {
     } else {
         Service.find({ origin: req.body.origin, destination: req.body.destination, service_date: req.body.d_date }, function (err, foundBuses) {
             if (!err) {
-                res.render("options", { foundBuses: foundBuses, ct: "", origin: req.body.origin, destination: req.body.destination, date: req.body.d_date , loggedIn : false });
+                res.render("options", { foundBuses: foundBuses, ct: "", origin: req.body.origin, destination: req.body.destination, date: req.body.d_date, loggedIn: false });
             } else {
                 console.log(err);
             }
@@ -1745,7 +1825,7 @@ app.post("/back", function (req, res) {
                         if (!err) {
                             Service.find({ origin: foundService.origin, destination: foundService.destination, service_date: foundDetails.date }, function (err, foundBuses) {
                                 if (!err) {
-                                    res.render("options", { foundBuses: foundBuses, ct: "", origin: foundService.origin, destination: foundService.destination, date: foundDetails.date  , loggedIn : true});
+                                    res.render("options", { foundBuses: foundBuses, ct: "", origin: foundService.origin, destination: foundService.destination, date: foundDetails.date, loggedIn: true });
                                 } else {
                                     console.log(err);
                                 }
@@ -1948,8 +2028,8 @@ app.post("/checkout-wallet", function (req, res) {
     }
 });
 
-app.post("/create-giftcard-checkout" , async (req,res) => {
-    if (req.isAuthenticated()){
+app.post("/create-giftcard-checkout", async (req, res) => {
+    if (req.isAuthenticated()) {
         const YOUR_DOMAIN = process.env.DOMAIN;
         const session = await stripe.checkout.sessions.create({
             line_items: [
@@ -1967,15 +2047,15 @@ app.post("/create-giftcard-checkout" , async (req,res) => {
             success_url: `${YOUR_DOMAIN}/paymentgiftcardtrue?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${YOUR_DOMAIN}/paymentgiftcardfalse?session_id={CHECKOUT_SESSION_ID}`,
         });
-        const newGiftCard = new GiftCard ({
-            userID : req.user._id,
-            cardID : (generateUniqueId({ length: 4, useLetters: true }) + "-" + generateUniqueId({ length: 6, useLetters: true }) + "-" + generateUniqueId({ length: 5, useLetters: true })).toUpperCase(),
-            cardPin : generateUniqueId({length : 6 , useLetters : false}),
-            faceValue : req.body.faceValue,
-            recName : req.body.name,
-            recEmail : req.body.email,
-            recMsg : req.body.giftMsg,
-            paymentID : session.id
+        const newGiftCard = new GiftCard({
+            userID: req.user._id,
+            cardID: (generateUniqueId({ length: 4, useLetters: true }) + "-" + generateUniqueId({ length: 6, useLetters: true }) + "-" + generateUniqueId({ length: 5, useLetters: true })).toUpperCase(),
+            cardPin: generateUniqueId({ length: 6, useLetters: false }),
+            faceValue: req.body.faceValue,
+            recName: req.body.name,
+            recEmail: req.body.email,
+            recMsg: req.body.giftMsg,
+            paymentID: session.id
         });
         newGiftCard.save();
         res.redirect(303, session.url);
@@ -1984,25 +2064,25 @@ app.post("/create-giftcard-checkout" , async (req,res) => {
     }
 });
 
-app.get("/paymentgiftcardtrue" , function(req,res){
-    if (req.isAuthenticated()){
+app.get("/paymentgiftcardtrue", function (req, res) {
+    if (req.isAuthenticated()) {
         const sessionId = req.query.session_id;
         stripe.checkout.sessions.retrieve(sessionId, (err, session) => {
             if (!err) {
-                if (session.payment_status ===  "paid"){
-                    GiftCard.findOneAndUpdate({paymentID : sessionId , paymentStatus : "initiated"} , {paymentStatus : "completed"} , function(err){
+                if (session.payment_status === "paid") {
+                    GiftCard.findOneAndUpdate({ paymentID: sessionId, paymentStatus: "initiated" }, { paymentStatus: "completed" }, function (err) {
                         if (!err) {
-                            GiftCard.findOne({paymentID : sessionId} , function(err , foundCard){
+                            GiftCard.findOne({ paymentID: sessionId }, function (err, foundCard) {
                                 if (!err) {
-                                    res.render("gcpsuc" , {giftCard : foundCard});
+                                    res.render("gcpsuc", { giftCard: foundCard });
                                     const template = fs.readFileSync('email-temps/giftcardtemplate.ejs', 'utf8');
                                     const data = {
-                                        name : foundCard.recName,
-                                        code : foundCard.cardID,
-                                        pin : foundCard.cardPin,
-                                        msg : foundCard.recMsg,
-                                        faceValue : foundCard.faceValue,
-                                        from : req.user.name
+                                        name: foundCard.recName,
+                                        code: foundCard.cardID,
+                                        pin: foundCard.cardPin,
+                                        msg: foundCard.recMsg,
+                                        faceValue: foundCard.faceValue,
+                                        from: req.user.name
                                     };
                                     const html = ejs.render(template, data);
                                     const mailOptions = {
@@ -2012,7 +2092,7 @@ app.get("/paymentgiftcardtrue" , function(req,res){
                                         html: html
                                     };
                                     transporter.sendMail(mailOptions, (error, info) => {
-                                        if (!error){
+                                        if (!error) {
                                             //do nothing
                                         } else {
                                             console.log(error);
@@ -2030,7 +2110,7 @@ app.get("/paymentgiftcardtrue" , function(req,res){
                     res.redirect(`/paymentgiftcardfalse?session_id={${sessionId}}`)
                 }
             } else {
-                console.log("Error retrieving session" , err);
+                console.log("Error retrieving session", err);
             }
         });
     } else {
@@ -2038,11 +2118,11 @@ app.get("/paymentgiftcardtrue" , function(req,res){
     }
 });
 
-app.get("/paymentgiftcardfalse" , function(req,res){
-    if (req.isAuthenticated()){
+app.get("/paymentgiftcardfalse", function (req, res) {
+    if (req.isAuthenticated()) {
         const sessionId = req.query.session_id;
-        GiftCard.findOneAndDelete({paymentID : sessionId} , function(err){
-            if (!err){
+        GiftCard.findOneAndDelete({ paymentID: sessionId }, function (err) {
+            if (!err) {
                 res.render("gcpfail");
             } else {
                 console.log(err);
@@ -2100,49 +2180,55 @@ app.post("/create-checkout-session", async (req, res) => {
                                         }
                                     });
                             });
-                            const session = await stripe.checkout.sessions.create({
-                                line_items: [
-                                    {
-                                        price_data: {
-                                            unit_amount: parseInt(foundD.bill_amount) * 100,
-                                            currency: 'inr',
-                                            product: 'prod_NhWAevU90Rtp8X'
-                                        },
-                                        quantity: 1,
-                                    },
-                                ],
-                                mode: 'payment',
-                                allow_promotion_codes: true,
-                                success_url: `${YOUR_DOMAIN}/paymentsuccess=q?`,
-                                cancel_url: `${YOUR_DOMAIN}/paymentfailure=q?`,
+                            const amount = parseInt(foundD.bill_amount) * 100; // Amount in paise (in this case, Rs. 10)
+                            const currency = 'INR';
+
+                            const options = {
+                                amount,
+                                currency,
+                                payment_capture: 1, // Auto-capture the payment when successful
+                            };
+
+                            razorpay.orders.create(options, (err, order) => {
+                                if (err) {
+                                    console.error(err);
+                                    return res.status(500).json({ error: 'Something went wrong!' });
+                                }
+                                const sessionId = order.id;
+                                const bookingDate = getCurrentDate();
+                                const newBooking = new Booking({
+                                    userID: foundD.userID,
+                                    bookingID: foundD.bookingID,
+                                    RzpOrderID: sessionId,
+                                    transactionID: "NA",
+                                    bookingDate: bookingDate,
+                                    bookingTime: time,
+                                    bookingStatus: "initiated",
+                                    service_no: foundD.service_no,
+                                    bus_type: foundD.bus_type,
+                                    origin: foundD.origin,
+                                    destination: foundD.destination,
+                                    journeyDate: foundD.dep_date,
+                                    dep_time: foundD.dep_time,
+                                    arr_time: foundD.arr_time,
+                                    boarding_point: foundD.boarding_point,
+                                    drop_point: foundD.drop_point,
+                                    pax_name: foundD.pax_name,
+                                    pax_age: foundD.pax_age,
+                                    pax_phone: foundD.pax_phone,
+                                    pax_gender: foundD.pax_gender,
+                                    seats: foundD.seats,
+                                    fare: foundD.bill_amount
+                                });
+                                newBooking.save((err) => {
+                                    if (!err) {
+                                        console.log(DOMAIN);
+                                        res.render("razorpay", { order: order, payload: foundD, domain: DOMAIN });
+                                    } else {
+                                        console.log(err);
+                                    }
+                                });
                             });
-                            const sessionId = session.id;
-                            const bookingDate = getCurrentDate();
-                            const newBooking = new Booking({
-                                userID: foundD.userID,
-                                bookingID: foundD.bookingID,
-                                transactionID: sessionId,
-                                bookingDate: bookingDate,
-                                bookingTime: time,
-                                bookingStatus: "initiated",
-                                service_no: foundD.service_no,
-                                bus_type: foundD.bus_type,
-                                origin: foundD.origin,
-                                destination: foundD.destination,
-                                journeyDate: foundD.dep_date,
-                                dep_time: foundD.dep_time,
-                                arr_time: foundD.arr_time,
-                                boarding_point: foundD.boarding_point,
-                                drop_point: foundD.drop_point,
-                                pax_name: foundD.pax_name,
-                                pax_age: foundD.pax_age,
-                                pax_phone: foundD.pax_phone,
-                                pax_gender: foundD.pax_gender,
-                                seats: foundD.seats,
-                                fare: foundD.bill_amount
-                            });
-                            newBooking.save();
-                            res.redirect(303, session.url);
                         }
                     } else {
                         console.log(err);
@@ -2157,7 +2243,138 @@ app.post("/create-checkout-session", async (req, res) => {
     }
 });
 
+function verifyRazorpaySignature(orderId, paymentId, receivedSignature, secret) {
+    const generatedSignature = crypto
+        .createHmac('sha256', secret)
+        .update(`${orderId}|${paymentId}`)
+        .digest('hex');
+    console.log("Generated sign : " + generatedSignature);
+    return generatedSignature === receivedSignature;
+}
 
+app.post('/payment-callback', (req, res) => {
+    const body = JSON.stringify(req.body);
+
+    const gotOrderId = req.body.razorpay_order_id;
+    const paymentId = req.body.razorpay_payment_id;
+    const receivedSignature = req.body.razorpay_signature;
+    const secret = 'f22ANju8dVQFHBB2Myedbzip';
+
+
+    Booking.findOne({ RzpOrderID: gotOrderId }, function (err, foundBooking) {
+        if (!err) {
+            if (foundBooking != null) {
+                console.log("Received sign : " + receivedSignature);
+                try {
+                    if (verifyRazorpaySignature(foundBooking.RzpOrderID, paymentId, receivedSignature, secret)) {
+                        // res.send("success");
+                        razorpay.payments.fetch(paymentId)
+                            .then(payment => {
+                                if (payment.status === "captured") {
+                                    User.findOne({ _id: foundBooking.userID }, function (err, foundUser) {
+                                        if (!err) {
+                                            const template = fs.readFileSync('email-temps/new.ejs', 'utf8');
+                                            const data = {
+                                                name: foundUser.name,
+                                                bookingID: foundBooking.bookingID,
+                                                bookingDate: foundBooking.bookingDate,
+                                                bus_type: foundBooking.bus_type,
+                                                source: foundBooking.origin,
+                                                destination: foundBooking.destination,
+                                                fare: foundBooking.fare,
+                                                paymentMethod: foundBooking.paymentMethod,
+                                                serviceNo: foundBooking.service_no,
+                                                journeyDate: foundBooking.journeyDate,
+                                                dep_time: foundBooking.dep_time,
+                                                boarding_point: foundBooking.boarding_point,
+                                                pax_name: foundBooking.pax_name,
+                                                pax_age: foundBooking.pax_age,
+                                                pax_gender: foundBooking.pax_gender,
+                                                seats: foundBooking.seats
+                                            };
+                                            const html = ejs.render(template, data);
+                                            const mailOptions = {
+                                                from: process.env.MAIL_ID,
+                                                to: foundUser.email,
+                                                subject: 'Booking Confirmation',
+                                                html: html
+                                            };
+                                            transporter.sendMail(mailOptions, (error, info) => {
+                                                if (error) {
+                                                    console.log('Error occurred:', error.message);
+                                                } else {
+                                                    res.render("bookingsuccess", { Booking: foundBooking });
+                                                    // generateInvoice(foundBooking, req.user)
+                                                    //     .then(pdfBuffer => {
+                                                    //         const s3 = new AWS.S3();
+                                                    //         const bucketName = process.env.AWS_BUCKET_NAME;
+                                                    //         const folderName = 'invoices';
+                                                    //         const fileName = `${foundBooking.bookingID}.pdf`;
+
+                                                    //         const params = {
+                                                    //             Bucket: bucketName,
+                                                    //             Key: folderName + '/' + fileName,
+                                                    //             Body: pdfBuffer
+                                                    //         };
+
+                                                    //         s3.upload(params, (err, data) => {
+                                                    //             if (err) {
+                                                    //                 console.error('Error uploading to S3:', err);
+                                                    //             } else {
+                                                    //                 // invoice upload success to s3
+                                                    //             }
+                                                    //         });
+                                                    //     })
+                                                    //     .catch(error => {
+                                                    //         console.error('Error generating Invoice:', error);
+                                                    // });
+                                                }
+                                            });
+                                        } else {
+                                            console.log(err);
+                                        }
+                                    });
+                                    Booking.findOneAndUpdate({ bookingID: foundBooking.bookingID }, { bookingStatus: "paid", transactionID: paymentId }, function (err) {
+                                        if (!err) {
+                                            TempD.findOneAndDelete({ userID: foundBooking.userID }, function (err) {
+                                                if (!err) {
+                                                    SearchQ.findOneAndDelete({ userID: foundBooking.userID }, function (err) {
+                                                        if (!err) {
+                                                            //do nothing
+                                                        } else {
+                                                            console.log(err);
+                                                        }
+                                                    });
+                                                } else {
+                                                    console.log(err);
+                                                }
+                                            });
+                                        } else {
+                                            console.log(err);
+                                        }
+                                    });
+                                } else {
+                                    res.render("bookingfail");
+                                }
+                            })
+                            .catch(error => {
+                                res.render("bookingfail");
+                                console.error('An error occurred:', error);
+                            });
+                    } else {
+                        res.render("bookingfail");
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            } else {
+                res.render("bookingfail");
+            }
+        } else {
+            console.log(err);
+        }
+    });
+});
 
 app.get("/paymentsuccess=q?", (req, res) => {
     if (req.isAuthenticated()) {
@@ -2168,10 +2385,12 @@ app.get("/paymentsuccess=q?", (req, res) => {
                         if (foundBooking.paymentMethod === "wallet") {
                             User.findOne({ _id: foundBooking.userID }, function (err, foundUser) {
                                 if (!err) {
-                                    const template = fs.readFileSync('email-temps/bookconfirmtemplate.ejs', 'utf8');
+                                    const template = fs.readFileSync('email-temps/new.ejs', 'utf8');
                                     const data = {
                                         name: foundUser.name,
                                         bookingID: foundBooking.bookingID,
+                                        bookingDate: foundBooking.bookingDate,
+                                        bus_type: foundBooking.bus_type,
                                         source: foundBooking.origin,
                                         destination: foundBooking.destination,
                                         fare: foundBooking.fare,
@@ -2179,135 +2398,52 @@ app.get("/paymentsuccess=q?", (req, res) => {
                                         serviceNo: foundBooking.service_no,
                                         journeyDate: foundBooking.journeyDate,
                                         dep_time: foundBooking.dep_time,
+                                        boarding_point: foundBooking.boarding_point,
+                                        pax_name: foundBooking.pax_name,
+                                        pax_age: foundBooking.pax_age,
+                                        pax_gender: foundBooking.pax_gender,
                                         seats: foundBooking.seats
                                     };
                                     const html = ejs.render(template, data);
                                     const mailOptions = {
                                         from: process.env.MAIL_ID,
                                         to: foundUser.email,
-                                        subject: 'Booking Confirmation',
+                                        subject: 'Booking Confirmation!',
                                         html: html
                                     };
                                     transporter.sendMail(mailOptions, (error, info) => {
                                         if (error) {
                                             console.log('Error occurred:', error.message);
                                         } else {
-                                            res.render("bookingsuccess", { Booking: foundD });
-                                            generateInvoice(foundBooking , req.user)
-                                            .then(pdfBuffer => {
-                                              const s3 = new AWS.S3();
-                                              const bucketName = process.env.AWS_BUCKET_NAME;
-                                              const folderName = 'invoices';
-                                              const fileName = `${foundBooking.bookingID}.pdf`;
-                                          
-                                              const params = {
-                                                Bucket: bucketName,
-                                                Key: folderName + '/' + fileName,
-                                                Body: pdfBuffer
-                                              };
-                                          
-                                              s3.upload(params, (err, data) => {
-                                                if (err) {
-                                                  console.error('Error uploading to S3:', err);
-                                                } else {
-                                                    // invoice uploaded to s3
-                                                }
-                                              });
-                                            })
-                                            .catch(error => {
-                                              console.error('Error generating Invoice:', error);
-                                            });
+                                            res.render("bookingsuccess", { Booking: foundBooking });
+                                            // generateInvoice(foundBooking, req.user)
+                                            //     .then(pdfBuffer => {
+                                            //         const s3 = new AWS.S3();
+                                            //         const bucketName = process.env.AWS_BUCKET_NAME;
+                                            //         const folderName = 'invoices';
+                                            //         const fileName = `${foundBooking.bookingID}.pdf`;
+
+                                            //         const params = {
+                                            //             Bucket: bucketName,
+                                            //             Key: folderName + '/' + fileName,
+                                            //             Body: pdfBuffer
+                                            //         };
+
+                                            //         s3.upload(params, (err, data) => {
+                                            //             if (err) {
+                                            //                 console.error('Error uploading to S3:', err);
+                                            //             } else {
+                                            //                 // invoice uploaded to s3
+                                            //             }
+                                            //         });
+                                            //     })
+                                            //     .catch(error => {
+                                            //         console.error('Error generating Invoice:', error);
+                                            //     });
                                         }
                                     });
                                 } else {
                                     console.log(err);
-                                }
-                            });
-                        } else {
-                            stripe.checkout.sessions.retrieve(foundBooking.transactionID, (err, session) => {
-                                if (!err) {
-                                    if (session.payment_status === "paid") {
-                                        User.findOne({ _id: foundBooking.userID }, function (err, foundUser) {
-                                            if (!err) {
-                                                const template = fs.readFileSync('email-temps/bookconfirmtemplate.ejs', 'utf8');
-                                                const data = {
-                                                    name: foundUser.name,
-                                                    bookingID: foundBooking.bookingID,
-                                                    source: foundBooking.origin,
-                                                    destination: foundBooking.destination,
-                                                    fare: foundBooking.fare,
-                                                    paymentMethod: foundBooking.paymentMethod,
-                                                    serviceNo: foundBooking.service_no,
-                                                    journeyDate: foundBooking.journeyDate,
-                                                    dep_time: foundBooking.dep_time,
-                                                    seats: foundBooking.seats
-                                                };
-                                                const html = ejs.render(template, data);
-                                                const mailOptions = {
-                                                    from: process.env.MAIL_ID,
-                                                    to: foundUser.email,
-                                                    subject: 'Booking Confirmation',
-                                                    html: html
-                                                };
-                                                transporter.sendMail(mailOptions, (error, info) => {
-                                                    if (error) {
-                                                        console.log('Error occurred:', error.message);
-                                                    } else {
-                                                        res.render("bookingsuccess", { Booking: foundD });
-                                                        generateInvoice(foundBooking , req.user)
-                                                        .then(pdfBuffer => {
-                                                          const s3 = new AWS.S3();
-                                                          const bucketName = process.env.AWS_BUCKET_NAME;
-                                                          const folderName = 'invoices';
-                                                          const fileName = `${foundBooking.bookingID}.pdf`;
-                                                      
-                                                          const params = {
-                                                            Bucket: bucketName,
-                                                            Key: folderName + '/' + fileName,
-                                                            Body: pdfBuffer
-                                                          };
-                                                      
-                                                          s3.upload(params, (err, data) => {
-                                                            if (err) {
-                                                              console.error('Error uploading to S3:', err);
-                                                            } else {
-                                                              // invoice upload success to s3
-                                                            }
-                                                          });
-                                                        })
-                                                        .catch(error => {
-                                                          console.error('Error generating Invoice:', error);
-                                                        });
-                                                    }
-                                                });
-                                            } else {
-                                                console.log(err);
-                                            }
-                                        });
-                                        Booking.findOneAndUpdate({ bookingID: foundD.bookingID }, { bookingStatus: "paid" }, function (err) {
-                                            if (!err) {
-                                                TempD.findOneAndDelete({ userID: req.user._id }, function (err) {
-                                                    if (!err) {
-                                                        SearchQ.findOneAndDelete({ userID: req.user._id }, function (err) {
-                                                            if (!err) {
-                                                                //do nothing
-                                                            } else {
-                                                                console.log(err);
-                                                            }
-                                                        });
-                                                    } else {
-                                                        console.log(err);
-                                                    }
-                                                });
-                                            } else {
-                                                console.log(err);
-                                            }
-                                        });
-                                    } else {
-                                        res.redirect("/paymentfailure=q?")
-                                    }
-                                } else {
-                                    res.render("swr");
                                 }
                             });
                         }
@@ -2350,13 +2486,14 @@ app.post("/seats", function (req, res) {
 
 });
 
+
 app.use((req, res, next) => {
     res.status(404).render("404");
 });
 
 connectDB().then(() => {
     console.log("eazybusDB CONNECTED SUCCESFULLY");
-    app.listen(process.env.PORT || 3000, () => {
+    app.listen(process.env.PORT || 4000, () => {
         console.log("eazybus Server STARTED");
     });
 });

@@ -142,8 +142,8 @@
                                 <div class="card-body">
                                     <h4 style="color: #010483; margin-bottom: 1rem;">Payment Details</h4>
                                     <p><span style="font-weight: 600; color: black;">Fare: </span> &#8377;<%= Booking.fare %></p>
-                                    <% if (Booking.paymentMethod === "stripe") { %>
-                                          <p><span style="font-weight: 600; color: black;">Payment Method:</span> Credit/Debit Card <span style="color: green;">- Stripe Checkout</span></p>
+                                    <% if (Booking.paymentMethod === "Razorpay") { %>
+                                          <p><span style="font-weight: 600; color: black;">Payment Method:</span> Razorpay </p>
                                     <% } else { %>
                                         <p><span style="font-weight: 600; color: black;">Payment Method:</span> eazy-Wallet</p>
                                     <% } %>

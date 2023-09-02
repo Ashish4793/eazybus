@@ -1340,11 +1340,20 @@ section {
   display: none;
 }
 
-@media (max-width: 1200px) {
-  .faq .faq-list {
-    padding: 0;
-  }
+.demo-wrap {
+  overflow: hidden;
+  position: relative;
 }
+
+.demo-bg {
+  opacity: 0.6;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: auto;
+}
+
 
 /*--------------------------------------------------------------
 # Contact
@@ -1651,11 +1660,6 @@ section {
   margin-top: 7rem;
 }
 
-@media (max-width: 600px) {
-  .customHue {
-    margin-top: 2rem;
-  }
-}
 
 .market-btn {
   display: inline-block;
@@ -1771,5 +1775,19 @@ lottie-player {
 }
 
 .thirdCard {
-  background-color: #F6FA70;
+  background-color: #6d5aff;
+}
+
+
+@media (max-width: 1200px) {
+  .faq .faq-list {
+    padding: 0;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .customHue {
+    margin-top: 2rem;
+  }
 }
