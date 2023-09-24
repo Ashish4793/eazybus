@@ -115,39 +115,39 @@
                         <div style="border-radius: 14px;  margin-bottom: 15px;" class="card text-bg-light shadow col-md-6">
                             <div class="card-body">
                                 <h4 class="card-title" style="color: #010483; margin-bottom: 1rem;">Trip Details</h4>
-                                <p><span style="font-weight: 600; color: black;">Booking ID:</span> <%= Booking.bookingID %> </p>
-                                <p><span style="font-weight: 600; color: black;">Booking Date:</span> <%= Booking.bookingDate %> </p>
-                                <p><span style="font-weight: 600; color: black;">Route:</span> <%= Booking.origin %> to <%= Booking.destination %></p>
-                                <p><span style="font-weight: 600; color: black;">Service No:</span> <%= Booking.service_no %></p>
-                                <p><span style="font-weight: 600; color: black;">Bus-Type:</span> <%= Booking.bus_type %></p>
-                                <p><span style="font-weight: 600; color: black;">Journey Date:</span> <%= Booking.journeyDate%></p>
-                                <p><span style="font-weight: 600; color: black;">Departure Time:</span> <%= dep_time %></p>
-                                <p><span style="font-weight: 600; color: black;">Arrival Time:</span> <%= arr_time %></p>
-                                <p><span style="font-weight: 600; color: black;">Seat Number:</span> <%= Booking.seats %></p>
-                                <p><span style="font-weight: 600; color: black;">Boarding Point <i class="fa-solid fa-location-dot fa-sm" style="color: #000000;"></i> :</span> <%= Booking.boarding_point %></p>
-                                <p><span style="font-weight: 600; color: black;">Drop Point <i class="fa-solid fa-location-dot fa-sm" style="color: #000000;"></i> :</span> <%= Booking.drop_point %></p>
+                                <p>Booking ID : <span style="font-weight: 600; color: black;"><%= Booking.bookingID %></span></p>
+                                <p>Booking Date : <span style="font-weight: 600; color: black;"><%= Booking.bookingDate %></span></p>
+                                <p>Route : <span style="font-weight: 600; color: black;"><%= Booking.origin %> to <%= Booking.destination %></span></p>
+                                <p>Service Number : <span style="font-weight: 600; color: black;"><%= Booking.service_no %></span></p>
+                                <p>Bus-Type: <span style="font-weight: 600; color: black;"> <%= Booking.bus_type %></span></p>
+                                <p>Journey Date : <span style="font-weight: 600; color: black;"><%= Booking.journeyDate%></span></p>
+                                <p>Departure Time : <span style="font-weight: 600; color: black;"><%= dep_time %></span></p>
+                                <p>Arrival Time : <span style="font-weight: 600; color: black;"><%= arr_time %></span></p>
+                                <p>Seat Numbers : <span style="font-weight: 600; color: black;"><%= Booking.seats %></span></p>
+                                <p>Boarding Point <i class="fa-solid fa-location-dot fa-sm" style="color: #000000;"></i> : <span style="font-weight: 600; color: black;"> <%= Booking.boarding_point %></span></p>
+                                <p>Drop Point <i class="fa-solid fa-location-dot fa-sm" style="color: #000000;"></i> : <span style="font-weight: 600; color: black;"> <%= Booking.drop_point %></span></p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div style="border-radius: 14px;" class="card text-bg-light shadow">
                                 <div class="card-body">
                                     <h4 style="color: #010483; margin-bottom: 1rem;">Passenger Details</h4>
-                                    <p><span style="font-weight: 600; color: black;">Name:</span> <%= Booking.pax_name %></p>
-                                    <p><span style="font-weight: 600; color: black;">Phone Number:</span> <%= Booking.pax_phone %></p>
-                                    <p><span style="font-weight: 600; color: black;">Age:</span> <%= Booking.pax_age %></p>
-                                    <p><span style="font-weight: 600; color: black;">Gender:</span> <%= Booking.pax_gender %></p>
+                                    <p>Name : <span style="font-weight: 600; color: black;"><%= Booking.pax_name %></span></p>
+                                    <p>Phone Number :  <span style="font-weight: 600; color: black;"><%= Booking.pax_phone %></span></p>
+                                    <p>Age : <span style="font-weight: 600; color: black;"><%= Booking.pax_age %></span></p>
+                                    <p>Gender : <span style="font-weight: 600; color: black;"> <%= Booking.pax_gender %></span></p>
                                 </div>
                             </div>
                             <div style="height: 16.4rem; margin-top: 15px; border-radius: 14px;" class="card text-bg-light shadow">
                                 <div class="card-body">
                                     <h4 style="color: #010483; margin-bottom: 1rem;">Payment Details</h4>
-                                    <p><span style="font-weight: 600; color: black;">Fare: </span> &#8377;<%= Booking.fare %></p>
+                                    <p>Fare : <span style="font-weight: 600; color: black;">&#8377;<%= Booking.fare %></span></p>
                                     <% if (Booking.paymentMethod === "Razorpay") { %>
-                                          <p><span style="font-weight: 600; color: black;">Payment Method:</span> Razorpay </p>
+                                          <p>Payment Method : <span style="font-weight: 600; color: black;">Razorpay</span></p>
                                     <% } else { %>
-                                        <p><span style="font-weight: 600; color: black;">Payment Method:</span> eazy-Wallet</p>
+                                        <p>Payment Method : <span style="font-weight: 600; color: black;">eazy-Wallet</span></p>
                                     <% } %>
-                                    <p><span style="font-weight: 600; color: black;">Transaction ID: </span><span style="word-wrap: break-word;"><%= Booking.transactionID %></span></p>
+                                    <p>Transaction ID : <span style="font-weight: 600; color: black;"><%= Booking.transactionID %></span></p>
                                 </div>
                             </div>
                         </div>

@@ -2264,15 +2264,39 @@ app.post('/payment-callback', (req, res) => {
     Booking.findOne({ RzpOrderID: gotOrderId }, function (err, foundBooking) {
         if (!err) {
             if (foundBooking != null) {
-                console.log("Received sign : " + receivedSignature);
                 try {
                     if (verifyRazorpaySignature(foundBooking.RzpOrderID, paymentId, receivedSignature, secret)) {
                         // res.send("success");
                         razorpay.payments.fetch(paymentId)
                             .then(payment => {
                                 if (payment.status === "captured") {
-                                    User.findOne({ _id: foundBooking.userID }, function (err, foundUser) {
+                                    User.findOne({ _id: foundBooking.userID }, async function (err, foundUser) {
                                         if (!err) {
+                                            res.render("bookingsuccess", { Booking: foundBooking });
+                                            const templateData = {
+                                                foundBooking: foundBooking
+                                            };
+                                            const renderedHtml = await ejs.renderFile('mticket.ejs', templateData);
+                        
+                                            // Generate PDF using Puppeteer
+                                            var browser = await puppeteer.launch({
+                                                args: [
+                                                    '--ignore-certificate-errors',
+                                                    '--no-sandbox',
+                                                    '--disable-setuid-sandbox',
+                                                    '--window-size=1920,1080',
+                                                    "--disable-accelerated-2d-canvas",
+                                                    "--disable-gpu"],
+                                                ignoreHTTPSErrors: true,
+                                                headless: true,
+                                            });
+                                            const page = await browser.newPage();
+                                            await page.setContent(renderedHtml);
+                                            const pdfBuffer = await page.pdf({ format: 'A4' });
+                                            await browser.close();
+                        
+                                            // send email
+
                                             const template = fs.readFileSync('email-temps/new.ejs', 'utf8');
                                             const data = {
                                                 name: foundUser.name,
@@ -2297,37 +2321,19 @@ app.post('/payment-callback', (req, res) => {
                                                 from: process.env.MAIL_ID,
                                                 to: foundUser.email,
                                                 subject: 'Booking Confirmation',
-                                                html: html
+                                                html: html,
+                                                attachments: [
+                                                    {
+                                                      filename: `${foundBooking.bookingID}.pdf` , 
+                                                      content: pdfBuffer,
+                                                    },
+                                                ],
                                             };
                                             transporter.sendMail(mailOptions, (error, info) => {
                                                 if (error) {
                                                     console.log('Error occurred:', error.message);
                                                 } else {
-                                                    res.render("bookingsuccess", { Booking: foundBooking });
-                                                    // generateInvoice(foundBooking, req.user)
-                                                    //     .then(pdfBuffer => {
-                                                    //         const s3 = new AWS.S3();
-                                                    //         const bucketName = process.env.AWS_BUCKET_NAME;
-                                                    //         const folderName = 'invoices';
-                                                    //         const fileName = `${foundBooking.bookingID}.pdf`;
-
-                                                    //         const params = {
-                                                    //             Bucket: bucketName,
-                                                    //             Key: folderName + '/' + fileName,
-                                                    //             Body: pdfBuffer
-                                                    //         };
-
-                                                    //         s3.upload(params, (err, data) => {
-                                                    //             if (err) {
-                                                    //                 console.error('Error uploading to S3:', err);
-                                                    //             } else {
-                                                    //                 // invoice upload success to s3
-                                                    //             }
-                                                    //         });
-                                                    //     })
-                                                    //     .catch(error => {
-                                                    //         console.error('Error generating Invoice:', error);
-                                                    // });
+                                                    // mail sent successfully
                                                 }
                                             });
                                         } else {
@@ -2383,8 +2389,34 @@ app.get("/paymentsuccess=q?", (req, res) => {
                 Booking.findOne({ bookingID: foundD.bookingID }, function (err, foundBooking) {
                     if (!err) {
                         if (foundBooking.paymentMethod === "wallet") {
-                            User.findOne({ _id: foundBooking.userID }, function (err, foundUser) {
+                            User.findOne({ _id: foundBooking.userID }, async function (err, foundUser) {
                                 if (!err) {
+                                    res.render("bookingsuccess", { Booking: foundBooking });
+
+                                    const templateData = {
+                                        foundBooking: foundBooking
+                                    };
+                                    const renderedHtml = await ejs.renderFile('mticket.ejs', templateData);
+                
+                                    // Generate PDF using Puppeteer
+                                    var browser = await puppeteer.launch({
+                                        args: [
+                                            '--ignore-certificate-errors',
+                                            '--no-sandbox',
+                                            '--disable-setuid-sandbox',
+                                            '--window-size=1920,1080',
+                                            "--disable-accelerated-2d-canvas",
+                                            "--disable-gpu"],
+                                        ignoreHTTPSErrors: true,
+                                        headless: true,
+                                    });
+                                    const page = await browser.newPage();
+                                    await page.setContent(renderedHtml);
+                                    const pdfBuffer = await page.pdf({ format: 'A4' });
+                                    await browser.close();
+                
+                                    // send email
+
                                     const template = fs.readFileSync('email-temps/new.ejs', 'utf8');
                                     const data = {
                                         name: foundUser.name,
@@ -2409,13 +2441,18 @@ app.get("/paymentsuccess=q?", (req, res) => {
                                         from: process.env.MAIL_ID,
                                         to: foundUser.email,
                                         subject: 'Booking Confirmation!',
-                                        html: html
+                                        html: html,
+                                        attachments: [
+                                            {
+                                              filename: `${foundBooking.bookingID}.pdf` , 
+                                              content: pdfBuffer,
+                                            },
+                                        ],
                                     };
                                     transporter.sendMail(mailOptions, (error, info) => {
                                         if (error) {
                                             console.log('Error occurred:', error.message);
                                         } else {
-                                            res.render("bookingsuccess", { Booking: foundBooking });
                                             // generateInvoice(foundBooking, req.user)
                                             //     .then(pdfBuffer => {
                                             //         const s3 = new AWS.S3();

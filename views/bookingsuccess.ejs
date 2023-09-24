@@ -34,7 +34,24 @@
     <link href="assets/css/style.css" rel="stylesheet">
 
 </head>
-
+<style>
+    
+    .dotted-line {
+      border: 1px dashed #fff;
+    }
+    
+    .img-fluid {
+      width: 114px;
+      height: auto;
+    }
+    
+    .bg-top {
+      background: #8c8c8c;
+    }
+    .a{
+        border-radius: 20px !important; 
+    }
+    </style>
 <body>
 
     <!-- ======= Header ======= -->
@@ -71,30 +88,53 @@
         <section style="margin-top: 3rem; margin-bottom: 6rem;">
             <div style="margin-top: 2rem;" class="container text-center">
                 <lottie-player src="https://assets1.lottiefiles.com/packages/lf20_lk80fpsm.json"  background="transparent"  speed="1"  style="width: 150px; height: 150px;" autoplay></lottie-player>
-                <h1 style="margin-top: 0.5rem; font-weight: bold; font-size: 3vh;">BOOKING SUCCESSFUL!</h1>
-                <p>Hurray! Your Booking from <%= Booking.origin %> to <%= Booking.destination %> has been confirmed!
+                <h1 class="mb-3" style="margin-top: 0.5rem; font-weight: bold; font-size: 3vh;">BOOKING SUCCESSFUL!</h1>
+                <p>Your booking from <%= Booking.origin %> to <%= Booking.destination %> has been confirmed!
                 </p>
-                <div style="margin-top: 1rem;" class="row justify-content-center">
-                    <div style="margin-bottom: 30px;" class="col-md-3">
-                        <div class="card h-100 mx-auto" style="width: 15rem;">
-                            <div class="card-body">
-                                <h5 style="font-weight: bold;" class="card-title">Booking Details</h5>
-                                <p style="float: left;" name="price" class="card-text ">Booking ID : <a
-                                        style="font-weight: bold; color: black;">
-                                        <%= Booking.bookingID %>
-                                    </a>
-                                </p>
-                                <p style="float: left;" name="price" class="card-text">Fare: <a
-                                        style="font-weight: bold; color: black;">&#8377;<%= Booking.fare %></a>
-                                </p>
-                                <p style="float: left;" name="price" class="card-text">Dep.Date : <a
-                                        style="font-weight: bold; color: black;">
-                                        <%= Booking.journeyDate %>
-                                    </a>
-                                </p>
+                <div class="container a mt-4 mb-5">
+                    <div class="d-flex justify-content-center row">
+                        <div class="col-md-6">
+                            <div class="card border-0">
+                                <h3 class="mb-3">Booking Summary</h3>
+                                <div class="card-body d-flex flex-column justify-content-between text-white p-0">
+                                    <div class="a mb-2 p-4 bg-top">
+                                        <div class="d-flex flex-row justify-content-between">
+                                            <div class="d-flex flex-column justify-content-between align-items-center">
+                                                <h1><%= Booking.origin %></h1><span><%= Booking.journeyDate %></span><span><%= Booking.dep_time %></span></div>
+                                            <div class="d-flex flex-column justify-content-center"><i class="fa fa-bus fa-3x"></i>
+                                                <%= Booking.service_no %>
+                                            </div>
+                                            <div class="d-flex flex-column justify-content-between align-items-center">
+                                                <h1><%= Booking.destination %></h1><span>Next Day</span><span><%= Booking.arr_time %></span></div>
+                                                
+                                        </div>
+                                    </div>
+                                    <div class="a bg-danger p-4">
+                                        <div class="d-flex flex-column justify-content-between">
+                                            <div class="d-flex flex-row justify-content-between text-center">
+                                                <div><span class="d-block">Booking ID</span><span style="font-weight: 500;"><%= Booking.bookingID %></span></div>
+                                                <div><span class="d-block">Boarding Point</span><span style="font-weight: 500;"><%= Booking.boarding_point %></span></div>                                                
+                                            </div>
+                                            <div class="doted-lines">
+                                                <hr class="dotted-line">
+                                            </div>
+                                            <div class="d-flex flex-row justify-content-between">
+                                                <div class="d-flex flex-column">
+                                                    <div><span class="d-block font-weight-bold">Passenger</span><span><%= Booking.pax_name %>,<%= Booking.pax_age %></span></div>
+                                                    
+                                                    <div class="mt-3"><span class="d-block font-weight-bold">Seats</span><span><%= Booking.seats %></span></div>
+                                                </div>
+                                                <div class="d-flex flex-column justify-content-between"><img class="img-fluid" src="https://i.ibb.co/82tnsmq/okay.png"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
+                <div>
+                    <p>Ticket details have been shared to the registered mail address.</p>
                 </div>
                 <a href="/bookings"><button type="button"
                         style="background-color: #01036f; border: none; width: 15rem; margin-top: 1rem;"
