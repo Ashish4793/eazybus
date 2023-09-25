@@ -770,17 +770,21 @@ app.get("/bookings/:bookingID", function (req, res) {
     if (req.isAuthenticated()) {
         Booking.findOne({ bookingID: req.params.bookingID }, function (err, foundBookings) {
             if (!err) {
-                Service.findOne({ service_no: foundBookings.service_no, service_date: foundBookings.journeyDate }, function (err, foundService) {
-                    if (!err) {
-                        if (foundService === null) {
-                            res.render("bookingdetails", { Booking: foundBookings, status: false });
+                if (foundBookings.userID === req.user._id){
+                    Service.findOne({ service_no: foundBookings.service_no, service_date: foundBookings.journeyDate }, function (err, foundService) {
+                        if (!err) {
+                            if (foundService === null) {
+                                res.render("bookingdetails", { Booking: foundBookings, status: false });
+                            } else {
+                                res.render("bookingdetails", { Booking: foundBookings, status: foundService.status })
+                            }
                         } else {
-                            res.render("bookingdetails", { Booking: foundBookings, status: foundService.status })
+                            console.log(err);
                         }
-                    } else {
-                        console.log(err);
-                    }
-                });
+                    });
+                } else {
+                    res.render("404");
+                }
             } else {
                 console.log(err);
             }
@@ -795,32 +799,35 @@ app.get("/download-ticket/:bookingID", async function (req, res) {
         Booking.findOne({ bookingID: req.params.bookingID, bookingStatus: "paid" }, async function (err, foundBooking) {
             if (!err) {
                 if (foundBooking != null) {
-                    const templateData = {
-                        foundBooking: foundBooking
-                    };
-                    const renderedHtml = await ejs.renderFile('mticket.ejs', templateData);
-
-                    // Generate PDF using Puppeteer
-                    var browser = await puppeteer.launch({
-                        args: [
-                            '--ignore-certificate-errors',
-                            '--no-sandbox',
-                            '--disable-setuid-sandbox',
-                            '--window-size=1920,1080',
-                            "--disable-accelerated-2d-canvas",
-                            "--disable-gpu"],
-                        ignoreHTTPSErrors: true,
-                        headless: true,
-                    });
-                    const page = await browser.newPage();
-                    await page.setContent(renderedHtml);
-                    const pdfBuffer = await page.pdf({ format: 'A4' });
-                    await browser.close();
-
-                    // Set response headers for file download
-                    res.setHeader('Content-Disposition', 'attachment; filename="mTicket.pdf"');
-                    res.setHeader('Content-Type', 'application/pdf');
-                    res.send(pdfBuffer);
+                    if (foundBooking.userID === req.user._id){
+                        const templateData = {
+                            foundBooking: foundBooking
+                        };
+                        const renderedHtml = await ejs.renderFile('mticket.ejs', templateData);
+                        // Generate PDF using Puppeteer
+                        var browser = await puppeteer.launch({
+                            args: [
+                                '--ignore-certificate-errors',
+                                '--no-sandbox',
+                                '--disable-setuid-sandbox',
+                                '--window-size=1920,1080',
+                                "--disable-accelerated-2d-canvas",
+                                "--disable-gpu"],
+                            ignoreHTTPSErrors: true,
+                            headless: true,
+                        });
+                        const page = await browser.newPage();
+                        await page.setContent(renderedHtml);
+                        const pdfBuffer = await page.pdf({ format: 'A4' });
+                        await browser.close();
+    
+                        // Set response headers for file download
+                        res.setHeader('Content-Disposition', 'attachment; filename="mTicket.pdf"');
+                        res.setHeader('Content-Type', 'application/pdf');
+                        res.send(pdfBuffer);
+                    } else {
+                        res.render("404")
+                    }
                 } else {
                     res.redirect("/bookings")
                 }
@@ -850,7 +857,7 @@ app.get("/download-taxinvoice", function (req, res) {
                     const fileStream = s3.getObject(params).createReadStream();
                     fileStream.pipe(res);
                 } else {
-                    res.redirect("/bookings");
+                    res.redirect("404");
                 }
             } else {
                 console.log(err);
@@ -1028,17 +1035,22 @@ app.get("/cancel-booking/:bookingID", function (req, res) {
         Booking.findOne({ bookingID: req.params.bookingID, bookingStatus: "paid" }, function (err, foundBooking) {
             if (!err) {
                 if (foundBooking != null) {
-                    Service.findOne({ service_no: foundBooking.service_no, service_date: foundBooking.journeyDate }, function (err, foundService) {
-                        if (!err) {
-                            if (foundService != null && foundService.status === true) {
-                                res.render("bookingcancel", { foundBooking: foundBooking });
+                    if (foundBooking.userID === req.user._id){
+                        Service.findOne({ service_no: foundBooking.service_no, service_date: foundBooking.journeyDate }, function (err, foundService) {
+                            if (!err) {
+                                if (foundService != null && foundService.status === true) {
+                                    res.render("bookingcancel", { foundBooking: foundBooking });
+                                } else {
+                                    res.redirect("/bookings");
+                                }
                             } else {
-                                res.redirect("/bookings");
+                                console.log(err);
                             }
-                        } else {
-                            console.log(err);
-                        }
-                    });
+                        });
+                    } else {
+                        res.render("404");
+                    }
+                     
                 } else {
                     res.redirect("/bookings")
                 }
@@ -1057,120 +1069,123 @@ app.post("/cancellation", function (req, res) {
         Booking.findOne({ bookingID: req.body.bookingID, bookingStatus: "paid" }, function (err, foundBooking) {
             if (!err) {
                 if (foundBooking != null) {
-                    const newArray = foundBooking.seats;
-                    newArray.forEach(function (element) {
-                        Service.updateOne(
-                            { service_no: foundBooking.service_no, service_date: foundBooking.journeyDate, 'seat.seat_no': element },
-                            { $set: { 'seat.$.seat_status': 'enabled' } },
-                            function (err, count) { if (!err) { } else { console.log(err); } });
-                    });
-                    Booking.findOneAndUpdate({ bookingID: req.body.bookingID, bookingStatus: "paid" }, { bookingStatus: "cancelled" }, function (err) {
-                        if (!err) {
-                            User.findOne({ _id: foundBooking.userID }, function (err, foundUser) {
-                                if (!err) {
-                                    const refund = parseInt(foundBooking.fare);
-                                    const refundAmount = Math.floor(refund / 2);
-                                    const template = fs.readFileSync('email-temps/bookcanceltemplate.ejs', 'utf8');
-                                    const data = {
-                                        name: foundUser.name,
-                                        bookingID: foundBooking.bookingID,
-                                        source: foundBooking.origin,
-                                        destination: foundBooking.destination,
-                                        refund: refundAmount,
-                                        journeyDate: foundBooking.journeyDate,
-                                        paymentMethod: foundBooking.paymentMethod
-                                    };
-                                    const html = ejs.render(template, data);
-                                    const mailOptions = {
-                                        from: process.env.MAIL_ID,
-                                        to: foundUser.email,
-                                        subject: 'Booking Cancellation',
-                                        html: html
-                                    };
-                                    transporter.sendMail(mailOptions, (error, info) => {
-                                        if (error) {
-                                            console.log('Error occurred:', error.message);
-                                        } else {
-                                            if (foundBooking.paymentMethod === "wallet") {
-                                                Wallet.updateOne({ userID: foundBooking.userID, },
-                                                    { $inc: { balance: refundAmount } }, { new: true }, function (err) {
-                                                        if (!err) {
-                                                            res.render("bookingcancelmsg", { bookingID: req.body.bookingID, refundAmt: refundAmount });
-                                                            const template1 = fs.readFileSync('email-temps/walletcredittemplate.ejs', 'utf8');
-                                                            const data1 = {
-                                                                name: foundUser.name,
-                                                                amount: refundAmount
-                                                            };
-                                                            const html1 = ejs.render(template1, data1);
-                                                            const mailOptions1 = {
-                                                                from: process.env.MAIL_ID,
-                                                                to: foundUser.email,
-                                                                subject: 'Wallet Update',
-                                                                html: html1
-                                                            };
-                                                            transporter.sendMail(mailOptions1, (error, info) => {
-                                                                if (!error) {
-                                                                    //do nothing
-                                                                } else {
-                                                                    console.log(error);
-                                                                }
-                                                            });
-                                                        } else {
-                                                            console.log(err);
-                                                        }
-                                                    });
+                    if (foundBooking.userID === req.user._id){
+                        const newArray = foundBooking.seats;
+                        newArray.forEach(function (element) {
+                            Service.updateOne(
+                                { service_no: foundBooking.service_no, service_date: foundBooking.journeyDate, 'seat.seat_no': element },
+                                { $set: { 'seat.$.seat_status': 'enabled' } },
+                                function (err, count) { if (!err) { } else { console.log(err); } });
+                        });
+                        Booking.findOneAndUpdate({ bookingID: req.body.bookingID, bookingStatus: "paid" }, { bookingStatus: "cancelled" }, function (err) {
+                            if (!err) {
+                                User.findOne({ _id: foundBooking.userID }, function (err, foundUser) {
+                                    if (!err) {
+                                        const refund = parseInt(foundBooking.fare);
+                                        const refundAmount = Math.floor(refund / 2);
+                                        const template = fs.readFileSync('email-temps/bookcanceltemplate.ejs', 'utf8');
+                                        const data = {
+                                            name: foundUser.name,
+                                            bookingID: foundBooking.bookingID,
+                                            source: foundBooking.origin,
+                                            destination: foundBooking.destination,
+                                            refund: refundAmount,
+                                            journeyDate: foundBooking.journeyDate,
+                                            paymentMethod: foundBooking.paymentMethod
+                                        };
+                                        const html = ejs.render(template, data);
+                                        const mailOptions = {
+                                            from: process.env.MAIL_ID,
+                                            to: foundUser.email,
+                                            subject: 'Booking Cancellation',
+                                            html: html
+                                        };
+                                        transporter.sendMail(mailOptions, (error, info) => {
+                                            if (error) {
+                                                console.log('Error occurred:', error.message);
                                             } else {
-                                                razorpay.payments.refund(foundBooking.transactionID, {
-                                                    "amount": refundAmount * 100,
-                                                    "speed": "optimum",
-                                                    "notes": {
-                                                        "Booking ID": foundBooking.bookingID,
-                                                    }
-                                                })
-                                                    .then(refundResponse => {
-                                                        res.render("bookingcancelmsg", { bookingID: req.body.bookingID, refundAmt: refundAmount });
-                                                        const template = fs.readFileSync('email-temps/refundtemplate.ejs', 'utf8');
-                                                        const data = {
-                                                            name: foundUser.name,
-                                                            bookingID : foundBooking.bookingID,
-                                                            refundID : refundResponse.id,
-                                                            amount : refundAmount
-                                                        };
-                                                        const html = ejs.render(template, data);
-                                                        const mailOptions = {
-                                                            from: process.env.MAIL_ID,
-                                                            to: foundUser.email,
-                                                            subject: 'Refund Initiated',
-                                                            html: html
-                                                        };
-                                                        transporter.sendMail(mailOptions, (error, info) => {
-                                                            if (error) {
-                                                                console.log('Error occurred:', error.message);
+                                                if (foundBooking.paymentMethod === "wallet") {
+                                                    Wallet.updateOne({ userID: foundBooking.userID, },
+                                                        { $inc: { balance: refundAmount } }, { new: true }, function (err) {
+                                                            if (!err) {
+                                                                res.render("bookingcancelmsg", { bookingID: req.body.bookingID, refundAmt: refundAmount });
+                                                                const template1 = fs.readFileSync('email-temps/walletcredittemplate.ejs', 'utf8');
+                                                                const data1 = {
+                                                                    name: foundUser.name,
+                                                                    amount: refundAmount
+                                                                };
+                                                                const html1 = ejs.render(template1, data1);
+                                                                const mailOptions1 = {
+                                                                    from: process.env.MAIL_ID,
+                                                                    to: foundUser.email,
+                                                                    subject: 'Wallet Update',
+                                                                    html: html1
+                                                                };
+                                                                transporter.sendMail(mailOptions1, (error, info) => {
+                                                                    if (!error) {
+                                                                        //do nothing
+                                                                    } else {
+                                                                        console.log(error);
+                                                                    }
+                                                                });
                                                             } else {
-                                                                //mail sent successfully
+                                                                console.log(err);
                                                             }
                                                         });
+                                                } else {
+                                                    razorpay.payments.refund(foundBooking.transactionID, {
+                                                        "amount": refundAmount * 100,
+                                                        "speed": "optimum",
+                                                        "notes": {
+                                                            "Booking ID": foundBooking.bookingID,
+                                                        }
                                                     })
-                                                    .catch(error => {
-                                                        res.redirect("/bookings");
-                                                        console.log("Error Occured while creating Refund : " + error);
-                                                    })
+                                                        .then(refundResponse => {
+                                                            res.render("bookingcancelmsg", { bookingID: req.body.bookingID, refundAmt: refundAmount });
+                                                            const template = fs.readFileSync('email-temps/refundtemplate.ejs', 'utf8');
+                                                            const data = {
+                                                                name: foundUser.name,
+                                                                bookingID : foundBooking.bookingID,
+                                                                refundID : refundResponse.id,
+                                                                amount : refundAmount
+                                                            };
+                                                            const html = ejs.render(template, data);
+                                                            const mailOptions = {
+                                                                from: process.env.MAIL_ID,
+                                                                to: foundUser.email,
+                                                                subject: 'Refund Initiated',
+                                                                html: html
+                                                            };
+                                                            transporter.sendMail(mailOptions, (error, info) => {
+                                                                if (error) {
+                                                                    console.log('Error occurred:', error.message);
+                                                                } else {
+                                                                    //mail sent successfully
+                                                                }
+                                                            });
+                                                        })
+                                                        .catch(error => {
+                                                            res.redirect("/bookings");
+                                                            console.log("Error Occured while creating Refund : " + error);
+                                                        })
+                                                }
                                             }
-                                        }
-                                    });
-                                } else {
-                                    console.log(err);
-                                }
-                            });
-                        } else {
-                            res.redirect("/bookings");
-                            console.log(err);
-                        }
-                    });
+                                        });
+                                    } else {
+                                        console.log(err);
+                                    }
+                                });
+                            } else {
+                                res.redirect("/bookings");
+                                console.log(err);
+                            }
+                        });
+                    } else {
+                        res.render("404");
+                    }
                 } else {
                     res.redirect("/bookings")
                 }
-
             } else {
                 res.redirect("/bookings")
             }

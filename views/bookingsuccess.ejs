@@ -124,7 +124,9 @@
                                                     
                                                     <div class="mt-3"><span class="d-block font-weight-bold">Seats</span><span><%= Booking.seats %></span></div>
                                                 </div>
-                                                <div class="d-flex flex-column justify-content-between"><img class="img-fluid" src="https://i.ibb.co/82tnsmq/okay.png"></div>
+                                                <div class="d-flex flex-column justify-content-between">
+                                                    <div id="qrcode"></div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -168,7 +170,17 @@
     <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
     <!-- Template Main JS File -->
     <script src="assets/js/main.js"></script>
-
+    <script src="assets/js/qrcode.js"></script>
+<script>
+var qrcode = new QRCode(document.getElementById("qrcode"), {
+	text: "https://eazybus.site/bookings/<%- Booking.bookingID %>",
+	width: 128,
+	height: 128,
+	colorDark : "#000000",
+	colorLight : "#ffffff",
+	correctLevel : QRCode.CorrectLevel.H
+});
+</script>
     <script>
         function subscribeClick(e) {
             e.preventDefault();
