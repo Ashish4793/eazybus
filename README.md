@@ -1,6 +1,6 @@
 <h1 align="center" id="title">EazyBus</h1>
 
-<p id="description">A fully working bus booking website with a lot of features. Users can book seatsmanage and cancel their bookings. Integrated with Razorpay and Stripe Payment Gateway.</p>
+<p id="description">A fully working bus booking website with a lot of features. Users can book seats , manage and cancel their bookings. Integrated with Razorpay and Stripe Payment Gateway.</p>
 
 <h2>🚀 Demo</h2>
 
@@ -8,7 +8,7 @@
 
 <h2>Project Screenshots:</h2>
 
-<img src="https://ashish-kumar1.netlify.app/assets/img/eazybus.webp" alt="project-screenshot" width="400" height="400/">
+<img src="https://ashish-kumar1.netlify.app/assets/img/eazybus.webp" alt="project-screenshot" width="600" height="300/">
 
   
   
