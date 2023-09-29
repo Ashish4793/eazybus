@@ -724,7 +724,7 @@ app.post("/addbus", async function (req, res) {
     });
 });
 
-// node-cron dev check
+// node-cron prod tested
 
 const serviceCheckCron = cron.schedule('*/5 * * * *', () => {
     serviceCheck(todayDate, currentTime);
@@ -748,16 +748,15 @@ const wallettransactionCheckCron = cron.schedule('*/2 * * * *', () => {
 
 
 
-const addServiceCron = cron.schedule('0 0 * * *', () => {
+const addServiceCron = cron.schedule('30 18 * * *', () => {
     addService(todayDate);
     addService(tommorowDate);
     deletePrevDayService(yestDate);
 });
 
-const addServiceCheckCron = cron.schedule('0 */3 * * *', () => {
+const addServiceCheckCron = cron.schedule('*/33 * * * *', () => {
     addService(todayDate);
     addService(tommorowDate);
-    deletePrevDayService(yestDate);
 });
 
 serviceCheckCron.start();
