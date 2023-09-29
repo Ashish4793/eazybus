@@ -1994,6 +1994,44 @@ app.post("/checkout-wallet", function (req, res) {
                             });
                         } else {
                             const newArray = foundD.seats;
+                            async function checkSeatAvailability(serviceNo, serviceDate, seatNumbers) {
+                                try {
+                                    // Retrieve the service document
+                                    const service = await Service.findOne({ service_no: serviceNo, service_date: serviceDate });
+                            
+                                    if (!service) {
+                                        console.log('In block phase : err-name : Service not found');
+                                        res.render('swr')
+                                        return false; // Service not found
+                                    }
+                            
+                                    // Check each seat's status
+                                    for (const seatNumber of seatNumbers) {
+                                        const seat = service.seat.find((s) => s.seat_no === seatNumber);
+                            
+                                        if (!seat) {
+                                            console.log(`Seat ${seatNumber} not found for this service`);
+                                            res.render('swr')
+                                            return false; // Seat not found
+                                        }
+                            
+                                        if (seat.seat_status === 'disabled') {
+                                            console.log(`Seat ${seatNumber} is already disabled`);
+                                            const disabledSeatNumbers = service.seat
+                                                .filter(seat => seat.seat_status === 'disabled')
+                                                .map(seat => seat.seat_no);
+                                            res.render("test", { blockedSeats: disabledSeatNumbers, type: service.type, err: true });
+                                            return false; // Seat is disabled
+                                        }
+                                    }
+                            
+                                    return true; // All seats are available
+                                } catch (error) {
+                                    console.error('In block phase , err-name : Error checking seat availability:', error);
+                                    res.render('swr')
+                                    return false;
+                                }
+                            }
                             const isSeatAvailable = await checkSeatAvailability(foundD.service_no, foundD.dep_date, newArray);
 
                             if (isAvailable) {
@@ -2199,44 +2237,7 @@ app.get("/paymentgiftcardfalse", function (req, res) {
 
 
 // function to check seat availabilty before creating booking
-async function checkSeatAvailability(serviceNo, serviceDate, seatNumbers) {
-    try {
-        // Retrieve the service document
-        const service = await Service.findOne({ service_no: serviceNo, service_date: serviceDate });
 
-        if (!service) {
-            console.log('In block phase : err-name : Service not found');
-            res.render('swr')
-            return false; // Service not found
-        }
-
-        // Check each seat's status
-        for (const seatNumber of seatNumbers) {
-            const seat = service.seat.find((s) => s.seat_no === seatNumber);
-
-            if (!seat) {
-                console.log(`Seat ${seatNumber} not found for this service`);
-                res.render('swr')
-                return false; // Seat not found
-            }
-
-            if (seat.seat_status === 'disabled') {
-                console.log(`Seat ${seatNumber} is already disabled`);
-                const disabledSeatNumbers = service.seat
-                    .filter(seat => seat.seat_status === 'disabled')
-                    .map(seat => seat.seat_no);
-                res.render("test", { blockedSeats: disabledSeatNumbers, type: service.type, err: true });
-                return false; // Seat is disabled
-            }
-        }
-
-        return true; // All seats are available
-    } catch (error) {
-        console.error('In block phase , err-name : Error checking seat availability:', error);
-        res.render('swr')
-        return false;
-    }
-}
 
 
 app.post("/create-checkout-session", async (req, res) => {
@@ -2275,6 +2276,45 @@ app.post("/create-checkout-session", async (req, res) => {
                             const serviceNo = foundD.service_no;
                             const serviceDate = foundD.dep_date;
                             const newArray = foundD.seats;
+
+                            async function checkSeatAvailability(serviceNo, serviceDate, seatNumbers) {
+                                try {
+                                    // Retrieve the service document
+                                    const service = await Service.findOne({ service_no: serviceNo, service_date: serviceDate });
+                            
+                                    if (!service) {
+                                        console.log('In block phase : err-name : Service not found');
+                                        res.render('swr')
+                                        return false; // Service not found
+                                    }
+                            
+                                    // Check each seat's status
+                                    for (const seatNumber of seatNumbers) {
+                                        const seat = service.seat.find((s) => s.seat_no === seatNumber);
+                            
+                                        if (!seat) {
+                                            console.log(`Seat ${seatNumber} not found for this service`);
+                                            res.render('swr')
+                                            return false; // Seat not found
+                                        }
+                            
+                                        if (seat.seat_status === 'disabled') {
+                                            console.log(`Seat ${seatNumber} is already disabled`);
+                                            const disabledSeatNumbers = service.seat
+                                                .filter(seat => seat.seat_status === 'disabled')
+                                                .map(seat => seat.seat_no);
+                                            res.render("test", { blockedSeats: disabledSeatNumbers, type: service.type, err: true });
+                                            return false; // Seat is disabled
+                                        }
+                                    }
+                            
+                                    return true; // All seats are available
+                                } catch (error) {
+                                    console.error('In block phase , err-name : Error checking seat availability:', error);
+                                    res.render('swr')
+                                    return false;
+                                }
+                            }
                             
                             const isSeatAvailable = await checkSeatAvailability(serviceNo, serviceDate, newArray);
 
