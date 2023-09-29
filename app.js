@@ -2034,7 +2034,7 @@ app.post("/checkout-wallet", function (req, res) {
                             }
                             const isSeatAvailable = await checkSeatAvailability(foundD.service_no, foundD.dep_date, newArray);
 
-                            if (isAvailable) {
+                            if (isSeatAvailable) {
                             const inInt = parseInt(foundD.bill_amount);
                             Wallet.findOne({ userID: foundD.userID }, function (err, foundWallet) {
                                 if (foundWallet.balance >= inInt) {
