@@ -6,6 +6,7 @@ function addService(date){
     Service.find({service_date : date} , function(err , foundService){
         if (!err) {
             if (foundService.length === 0) {
+                console.log("will add service");
                 Bus.find({} , function(err , foundBuses){
                     if (!err) {
                         foundBuses.forEach(function(bus){
@@ -228,6 +229,8 @@ function addService(date){
                     }
                 });
             } else {
+                console.log("will not add service");
+
                 // service already exists
             }
         } else {

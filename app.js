@@ -28,6 +28,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const findOrCreate = require('mongoose-findorcreate');
 const { log } = require('console');
 const { type } = require('os');
+const cron = require("node-cron");
 const DOMAIN = process.env.DOMAIN;
 
 passport.serializeUser(function (user, done) {
@@ -348,6 +349,7 @@ const tommorowDate = getTommorowDate();
 const currentTime = getCurrentTime();
 
 function serviceCheck(date, time) {
+    console.log("function ran");
     Service.find({ service_date: date, status: true }, function (err, foundService) {
         if (!err) {
             foundService.forEach(function (service) {
@@ -373,6 +375,8 @@ function serviceCheck(date, time) {
 }
 
 function BookingsCheck() {
+    console.log("bookingsCheck() cron ran");
+
     Booking.find({ bookingStatus: "initiated" }, function (err, foundBookings) {
         if (!err) {
             foundBookings.forEach(function (booking) {
@@ -409,6 +413,8 @@ function BookingsCheck() {
 }
 
 function bookingStatusCheck() {
+    console.log("bookingStatusCheck() cron ran");
+
     Booking.find({ bookingStatus: "paid" }, function (err, foundBookings) {
         if (!err) {
             foundBookings.forEach(function (booking) {
@@ -433,6 +439,7 @@ function bookingStatusCheck() {
 }
 
 function transactionCheck() {
+    console.log("transactionCheck() cron ran");
     Booking.find({ bookingStatus: "initiated" }, function (err, foundBookings) {
         if (!err) {
             foundBookings.forEach(function (booking) {
@@ -493,6 +500,7 @@ function transactionCheck() {
 }
 
 function wallettransactionCheck() {
+    console.log("wallettransactionCheck() cron ran");
     WalletTransaction.find({ status: "initiated" }, function (err, foundTransactions) {
         if (!err) {
             foundTransactions.forEach(function (transaction) {
@@ -716,18 +724,55 @@ app.post("/addbus", async function (req, res) {
     });
 });
 
+// node-cron dev check
+
+const serviceCheckCron = cron.schedule('*/5 * * * *', () => {
+    serviceCheck(todayDate, currentTime);
+});
+
+const bookedSeatCheckCron = cron.schedule('*/2 * * * *', () => {
+    BookingsCheck();
+});
+
+const bookingPaymentCheckCron = cron.schedule('*/2 * * * *', () => {
+    bookingStatusCheck();
+});
+
+const transactionCheckCron = cron.schedule('*/2 * * * *', () => {
+    transactionCheck();
+});
+
+const wallettransactionCheckCron = cron.schedule('*/2 * * * *', () => {
+    wallettransactionCheck();
+});
+
+
+
+const addServiceCron = cron.schedule('0 0 * * *', () => {
+    addService(todayDate);
+    addService(tommorowDate);
+    deletePrevDayService(yestDate);
+});
+
+const addServiceCheckCron = cron.schedule('0 */3 * * *', () => {
+    addService(todayDate);
+    addService(tommorowDate);
+    deletePrevDayService(yestDate);
+});
+
+serviceCheckCron.start();
+bookedSeatCheckCron.start();
+bookingPaymentCheckCron.start();
+transactionCheckCron.start();
+wallettransactionCheckCron.start();
+addServiceCron.start();
+addServiceCheckCron.start();
+
 //// Home route
 
 
+
 app.get("/", function (req, res) {
-    deletePrevDayService(yestDate);
-    addService(todayDate);
-    addService(tommorowDate);
-    serviceCheck(todayDate, currentTime);
-    BookingsCheck();
-    bookingStatusCheck();
-    transactionCheck();
-    wallettransactionCheck();
     if (req.isAuthenticated()) {
         if (req.user.verified === false) {
             res.render("onboarding", { err: false });
@@ -748,8 +793,6 @@ app.get("/", function (req, res) {
 
 app.get("/bookings", function (req, res) {
     if (req.isAuthenticated()) {
-        bookingStatusCheck();
-        transactionCheck();
         if (req.user.verified === false) {
             res.render("onboarding", { err: false });
         } else {
@@ -770,7 +813,7 @@ app.get("/bookings/:bookingID", function (req, res) {
     if (req.isAuthenticated()) {
         Booking.findOne({ bookingID: req.params.bookingID }, function (err, foundBookings) {
             if (!err) {
-                if (foundBookings.userID === req.user._id){
+                if (foundBookings.userID === req.user._id) {
                     Service.findOne({ service_no: foundBookings.service_no, service_date: foundBookings.journeyDate }, function (err, foundService) {
                         if (!err) {
                             if (foundService === null) {
@@ -799,7 +842,7 @@ app.get("/download-ticket/:bookingID", async function (req, res) {
         Booking.findOne({ bookingID: req.params.bookingID, bookingStatus: "paid" }, async function (err, foundBooking) {
             if (!err) {
                 if (foundBooking != null) {
-                    if (foundBooking.userID === req.user._id){
+                    if (foundBooking.userID === req.user._id) {
                         const templateData = {
                             foundBooking: foundBooking
                         };
@@ -820,7 +863,7 @@ app.get("/download-ticket/:bookingID", async function (req, res) {
                         await page.setContent(renderedHtml);
                         const pdfBuffer = await page.pdf({ format: 'A4' });
                         await browser.close();
-    
+
                         // Set response headers for file download
                         res.setHeader('Content-Disposition', 'attachment; filename="mTicket.pdf"');
                         res.setHeader('Content-Type', 'application/pdf');
@@ -1035,7 +1078,7 @@ app.get("/cancel-booking/:bookingID", function (req, res) {
         Booking.findOne({ bookingID: req.params.bookingID, bookingStatus: "paid" }, function (err, foundBooking) {
             if (!err) {
                 if (foundBooking != null) {
-                    if (foundBooking.userID === req.user._id){
+                    if (foundBooking.userID === req.user._id) {
                         Service.findOne({ service_no: foundBooking.service_no, service_date: foundBooking.journeyDate }, function (err, foundService) {
                             if (!err) {
                                 if (foundService != null && foundService.status === true) {
@@ -1050,7 +1093,7 @@ app.get("/cancel-booking/:bookingID", function (req, res) {
                     } else {
                         res.render("404");
                     }
-                     
+
                 } else {
                     res.redirect("/bookings")
                 }
@@ -1069,7 +1112,7 @@ app.post("/cancellation", function (req, res) {
         Booking.findOne({ bookingID: req.body.bookingID, bookingStatus: "paid" }, function (err, foundBooking) {
             if (!err) {
                 if (foundBooking != null) {
-                    if (foundBooking.userID === req.user._id){
+                    if (foundBooking.userID === req.user._id) {
                         const newArray = foundBooking.seats;
                         newArray.forEach(function (element) {
                             Service.updateOne(
@@ -1145,9 +1188,9 @@ app.post("/cancellation", function (req, res) {
                                                             const template = fs.readFileSync('email-temps/refundtemplate.ejs', 'utf8');
                                                             const data = {
                                                                 name: foundUser.name,
-                                                                bookingID : foundBooking.bookingID,
-                                                                refundID : refundResponse.id,
-                                                                amount : refundAmount
+                                                                bookingID: foundBooking.bookingID,
+                                                                refundID: refundResponse.id,
+                                                                amount: refundAmount
                                                             };
                                                             const html = ejs.render(template, data);
                                                             const mailOptions = {
@@ -1951,10 +1994,13 @@ app.post("/checkout-wallet", function (req, res) {
                                 }
                             });
                         } else {
+                            const newArray = foundD.seats;
+                            const isSeatAvailable = await checkSeatAvailability(foundD.service_no, foundD.dep_date, newArray);
+
+                            if (isAvailable) {
                             const inInt = parseInt(foundD.bill_amount);
                             Wallet.findOne({ userID: foundD.userID }, function (err, foundWallet) {
                                 if (foundWallet.balance >= inInt) {
-                                    const newArray = foundD.seats;
                                     newArray.forEach(function (element) {
                                         Service.updateOne(
                                             { service_no: foundD.service_no, service_date: foundD.dep_date, 'seat.seat_no': element },
@@ -2018,6 +2064,8 @@ app.post("/checkout-wallet", function (req, res) {
                                                     if (!err) {
                                                         res.redirect("/paymentsuccess=q?");
                                                     } else {
+                                                        console.log(err);
+                                                        console.log("Wallet BookingSAVe error");
                                                         res.redirect("/paymentfailure=q?");
                                                     }
                                                 });
@@ -2026,9 +2074,11 @@ app.post("/checkout-wallet", function (req, res) {
                                             }
                                         });
                                 } else {
+                                    console.log("Low balance error");
                                     res.redirect("/paymentfailure=q?");
                                 }
                             });
+                            }
                         }
                     } else {
                         console.log(err);
@@ -2149,6 +2199,47 @@ app.get("/paymentgiftcardfalse", function (req, res) {
 });
 
 
+// function to check seat availabilty before creating booking
+async function checkSeatAvailability(serviceNo, serviceDate, seatNumbers) {
+    try {
+        // Retrieve the service document
+        const service = await Service.findOne({ service_no: serviceNo, service_date: serviceDate });
+
+        if (!service) {
+            console.log('In block phase : err-name : Service not found');
+            res.render('swr')
+            return false; // Service not found
+        }
+
+        // Check each seat's status
+        for (const seatNumber of seatNumbers) {
+            const seat = service.seat.find((s) => s.seat_no === seatNumber);
+
+            if (!seat) {
+                console.log(`Seat ${seatNumber} not found for this service`);
+                res.render('swr')
+                return false; // Seat not found
+            }
+
+            if (seat.seat_status === 'disabled') {
+                console.log(`Seat ${seatNumber} is already disabled`);
+                const disabledSeatNumbers = service.seat
+                    .filter(seat => seat.seat_status === 'disabled')
+                    .map(seat => seat.seat_no);
+                res.render("test", { blockedSeats: disabledSeatNumbers, type: service.type, err: true });
+                return false; // Seat is disabled
+            }
+        }
+
+        return true; // All seats are available
+    } catch (error) {
+        console.error('In block phase , err-name : Error checking seat availability:', error);
+        res.render('swr')
+        return false;
+    }
+}
+
+
 app.post("/create-checkout-session", async (req, res) => {
     if (req.isAuthenticated()) {
         const time = new Date().getTime().toString();
@@ -2182,68 +2273,75 @@ app.post("/create-checkout-session", async (req, res) => {
                                 }
                             });
                         } else {
+                            const serviceNo = foundD.service_no;
+                            const serviceDate = foundD.dep_date;
                             const newArray = foundD.seats;
-                            newArray.forEach(function (element) {
-                                Service.updateOne(
-                                    { service_no: foundD.service_no, service_date: foundD.dep_date, 'seat.seat_no': element },
-                                    { $set: { 'seat.$.seat_status': 'disabled' } },
-                                    function (err, count) {
-                                        if (!err) {
-                                            // do nothing
-                                        } else {
-                                            console.log(err);
-                                        }
-                                    });
-                            });
-                            const amount = parseInt(foundD.bill_amount) * 100; // Amount in paise (in this case, Rs. 10)
-                            const currency = 'INR';
+                            
+                            const isSeatAvailable = await checkSeatAvailability(serviceNo, serviceDate, newArray);
 
-                            const options = {
-                                amount,
-                                currency,
-                                payment_capture: 1, // Auto-capture the payment when successful
-                            };
+                            if (isSeatAvailable) {
+                                newArray.forEach(function (element) {
+                                    Service.updateOne(
+                                        { service_no: foundD.service_no, service_date: foundD.dep_date, 'seat.seat_no': element },
+                                        { $set: { 'seat.$.seat_status': 'disabled' } },
+                                        function (err, count) {
+                                            if (!err) {
+                                                const amount = parseInt(foundD.bill_amount) * 100; // Amount in paise (in this case, Rs. 10)
+                                                const currency = 'INR';
 
-                            razorpay.orders.create(options, (err, order) => {
-                                if (err) {
-                                    console.error(err);
-                                    return res.status(500).json({ error: 'Something went wrong!' });
-                                }
-                                const sessionId = order.id;
-                                const bookingDate = getCurrentDate();
-                                const newBooking = new Booking({
-                                    userID: foundD.userID,
-                                    bookingID: foundD.bookingID,
-                                    RzpOrderID: sessionId,
-                                    transactionID: "NA",
-                                    bookingDate: bookingDate,
-                                    bookingTime: time,
-                                    bookingStatus: "initiated",
-                                    service_no: foundD.service_no,
-                                    bus_type: foundD.bus_type,
-                                    origin: foundD.origin,
-                                    destination: foundD.destination,
-                                    journeyDate: foundD.dep_date,
-                                    dep_time: foundD.dep_time,
-                                    arr_time: foundD.arr_time,
-                                    boarding_point: foundD.boarding_point,
-                                    drop_point: foundD.drop_point,
-                                    pax_name: foundD.pax_name,
-                                    pax_age: foundD.pax_age,
-                                    pax_phone: foundD.pax_phone,
-                                    pax_gender: foundD.pax_gender,
-                                    seats: foundD.seats,
-                                    fare: foundD.bill_amount
+                                                const options = {
+                                                    amount,
+                                                    currency,
+                                                    payment_capture: 1, // Auto-capture the payment when successful
+                                                };
+
+                                                razorpay.orders.create(options, (err, order) => {
+                                                    if (err) {
+                                                        console.error(err);
+                                                        return res.status(500).json({ error: 'Something went wrong!' });
+                                                    }
+                                                    const sessionId = order.id;
+                                                    const bookingDate = getCurrentDate();
+                                                    const newBooking = new Booking({
+                                                        userID: foundD.userID,
+                                                        bookingID: foundD.bookingID,
+                                                        RzpOrderID: sessionId,
+                                                        transactionID: "NA",
+                                                        bookingDate: bookingDate,
+                                                        bookingTime: time,
+                                                        bookingStatus: "initiated",
+                                                        service_no: foundD.service_no,
+                                                        bus_type: foundD.bus_type,
+                                                        origin: foundD.origin,
+                                                        destination: foundD.destination,
+                                                        journeyDate: foundD.dep_date,
+                                                        dep_time: foundD.dep_time,
+                                                        arr_time: foundD.arr_time,
+                                                        boarding_point: foundD.boarding_point,
+                                                        drop_point: foundD.drop_point,
+                                                        pax_name: foundD.pax_name,
+                                                        pax_age: foundD.pax_age,
+                                                        pax_phone: foundD.pax_phone,
+                                                        pax_gender: foundD.pax_gender,
+                                                        seats: foundD.seats,
+                                                        fare: foundD.bill_amount
+                                                    });
+                                                    newBooking.save((err) => {
+                                                        if (!err) {
+                                                            console.log(DOMAIN);
+                                                            res.render("razorpay", { order: order, payload: foundD, domain: DOMAIN });
+                                                        } else {
+                                                            console.log(err);
+                                                        }
+                                                    });
+                                                });
+                                            } else {
+                                                console.log(err);
+                                            }
+                                        });
                                 });
-                                newBooking.save((err) => {
-                                    if (!err) {
-                                        console.log(DOMAIN);
-                                        res.render("razorpay", { order: order, payload: foundD, domain: DOMAIN });
-                                    } else {
-                                        console.log(err);
-                                    }
-                                });
-                            });
+                            }
+
                         }
                     } else {
                         console.log(err);
@@ -2263,7 +2361,6 @@ function verifyRazorpaySignature(orderId, paymentId, receivedSignature, secret) 
         .createHmac('sha256', secret)
         .update(`${orderId}|${paymentId}`)
         .digest('hex');
-    console.log("Generated sign : " + generatedSignature);
     return generatedSignature === receivedSignature;
 }
 
@@ -2292,7 +2389,7 @@ app.post('/payment-callback', (req, res) => {
                                                 foundBooking: foundBooking
                                             };
                                             const renderedHtml = await ejs.renderFile('mticket.ejs', templateData);
-                        
+
                                             // Generate PDF using Puppeteer
                                             var browser = await puppeteer.launch({
                                                 args: [
@@ -2309,7 +2406,7 @@ app.post('/payment-callback', (req, res) => {
                                             await page.setContent(renderedHtml);
                                             const pdfBuffer = await page.pdf({ format: 'A4' });
                                             await browser.close();
-                        
+
                                             // send email
 
                                             const template = fs.readFileSync('email-temps/new.ejs', 'utf8');
@@ -2339,8 +2436,8 @@ app.post('/payment-callback', (req, res) => {
                                                 html: html,
                                                 attachments: [
                                                     {
-                                                      filename: `${foundBooking.bookingID}.pdf` , 
-                                                      content: pdfBuffer,
+                                                        filename: `${foundBooking.bookingID}.pdf`,
+                                                        content: pdfBuffer,
                                                     },
                                                 ],
                                             };
@@ -2412,7 +2509,7 @@ app.get("/paymentsuccess=q?", (req, res) => {
                                         foundBooking: foundBooking
                                     };
                                     const renderedHtml = await ejs.renderFile('mticket.ejs', templateData);
-                
+
                                     // Generate PDF using Puppeteer
                                     var browser = await puppeteer.launch({
                                         args: [
@@ -2429,7 +2526,7 @@ app.get("/paymentsuccess=q?", (req, res) => {
                                     await page.setContent(renderedHtml);
                                     const pdfBuffer = await page.pdf({ format: 'A4' });
                                     await browser.close();
-                
+
                                     // send email
 
                                     const template = fs.readFileSync('email-temps/new.ejs', 'utf8');
@@ -2459,8 +2556,8 @@ app.get("/paymentsuccess=q?", (req, res) => {
                                         html: html,
                                         attachments: [
                                             {
-                                              filename: `${foundBooking.bookingID}.pdf` , 
-                                              content: pdfBuffer,
+                                                filename: `${foundBooking.bookingID}.pdf`,
+                                                content: pdfBuffer,
                                             },
                                         ],
                                     };

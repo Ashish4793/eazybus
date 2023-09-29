@@ -17,7 +17,7 @@ const serviceSchema = new mongoose.Schema({
         seat_no: String,
         seat_status: String,
     }],
-    createdAt: { type: Date, default: Date.now, expires: 216000 }
+    createdAt: { type: Date, default: Date.now, expires: 180000 }
 });
 
 module.exports = mongoose.model('Service', serviceSchema);
