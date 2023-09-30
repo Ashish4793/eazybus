@@ -16,7 +16,6 @@ const MongoStore = require('connect-mongo')(session);
 const Service = require("./serviceSchema");
 const Bus = require("./busSchema");
 const { DateTime } = require("luxon");
-const { addService } = require("./addService");
 const nodemailer = require('nodemailer');
 const fs = require('fs');
 const passport = require("passport");
@@ -268,7 +267,7 @@ const transporter = nodemailer.createTransport({
 
 
 function getCurrentTime() {
-    const now = DateTime.now().setZone('Asia/Kolkata').plus({ minutes: 25 });
+    const now = DateTime.now().setZone('Asia/Kolkata').plus({ minutes: 20 });
     let hour = now.hour.toString();
     let minutes = now.minute.toString();
     if (hour.length < 2) {
@@ -342,20 +341,272 @@ function getCurrentDate() {
 }
 
 
+function compareTimes(time1, time2) {
+    const parseTime = (time) => {
+        const [hours, minutes] = time.split(':').map(Number);
+        return new Date(0, 0, 0, hours, minutes);
+    };
 
-const yestDate = getLastDate();
-const todayDate = getCurrentDate();
-const tommorowDate = getTommorowDate();
-const currentTime = getCurrentTime();
+    const date1 = parseTime(time1);
+    const date2 = parseTime(time2);
 
-function serviceCheck(date, time) {
-    console.log("function ran");
+    if (date1 < date2) {
+        return -1;
+    } else if (date1 > date2) {
+        return 1;
+    } else {
+        return 0; // Times are equal
+    }
+}
+
+function addService(getDateFunction){
+    const date = getDateFunction();
+    Service.find({service_date : date} , function(err , foundService){
+        if (!err) {
+            if (foundService.length === 0) {
+                console.log("will add service");
+                Bus.find({} , function(err , foundBuses){
+                    if (!err) {
+                        foundBuses.forEach(function(bus){
+                            if (bus.type === "sleeper") {
+                                const array = ['1A', '1B', '1C', '2A', '2B', '2C', '3A', '3B', '3C', '4A', '4B', '4C', '5A', '5B', '5C', '6A', '6B', '6C'];
+                                const newService = new Service({
+                                    service_no: bus.bus_service_no,
+                                    service_date: date,
+                                    status : true,
+                                    origin: bus.bus_origin,
+                                    destination: bus.bus_destination,
+                                    type: bus.type,
+                                    bus_type: bus.bus_name,
+                                    dep_time: bus.bus_dep_time,
+                                    arr_time: bus.bus_arr_time,
+                                    journeyDuration : bus.journeyDuration,
+                                    boarding_point : bus.boarding_point,
+                                    drop_point : bus.drop_point,
+                                    fare: bus.fare,
+                                    seat: [{
+                                        seat_no: array[0],
+                                        seat_status: "disabled"
+                                    }, {
+                                        seat_no: array[1],
+                                        seat_status: "disabled",
+                                    }, {
+                                        seat_no: array[2],
+                                        seat_status: "disabled",
+                                    }, {
+                                        seat_no: array[3],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[4],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[5],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[6],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[7],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[8],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[9],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[10],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[11],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[12],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[13],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[14],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[15],
+                                        seat_status: "disabled",
+                                    }, {
+                                        seat_no: array[16],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[17],
+                                        seat_status: "enabled",
+                                    },]
+                                });
+                                newService.save(function (err) {
+                                    if (!err) {
+                                        //saved service
+                                    } else {
+                                        console.log(err);
+                                    }
+                                });
+                            } else {
+                                const array = ['1A', '1B', '1C', '1D', '2A', '2B', '2C', '2D', '3A', '3B', '3C', '3D', '4A', '4B', '4C', '4D', '5A', '5B', '5C', '5D', '6A', '6B', '6C', '6D', '7A', '7B', '7C', '7D', '8A', '8B', '8C', '8D', '9A', '9B', '9C', '9D'];
+                                const newService = new Service({
+                                    service_no: bus.bus_service_no,
+                                    service_date: date,
+                                    status : true,
+                                    origin: bus.bus_origin,
+                                    destination: bus.bus_destination,
+                                    type: bus.type,
+                                    bus_type: bus.bus_name,
+                                    dep_time: bus.bus_dep_time,
+                                    arr_time: bus.bus_arr_time,
+                                    journeyDuration : bus.journeyDuration,
+                                    boarding_point : bus.boarding_point,
+                                    drop_point : bus.drop_point,
+                                    fare: bus.fare,
+                                    seat: [{
+                                        seat_no: array[0],
+                                        seat_status: "disabled"
+                                    }, {
+                                        seat_no: array[1],
+                                        seat_status: "disabled",
+                                    }, {
+                                        seat_no: array[2],
+                                        seat_status: "disabled",
+                                    }, {
+                                        seat_no: array[3],
+                                        seat_status: "disabled",
+                                    }, {
+                                        seat_no: array[4],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[5],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[6],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[7],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[8],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[9],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[10],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[11],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[12],
+                                        seat_status: "disabled",
+                                    }, {
+                                        seat_no: array[13],
+                                        seat_status: "disabled",
+                                    }, {
+                                        seat_no: array[14],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[15],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[16],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[17],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[18],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[19],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[20],
+                                        seat_status: "disabled",
+                                    }, {
+                                        seat_no: array[21],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[22],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[23],
+                                        seat_status: "disabled",
+                                    }, {
+                                        seat_no: array[24],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[25],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[26],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[27],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[28],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[29],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[30],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[31],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[32],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[33],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[34],
+                                        seat_status: "enabled",
+                                    }, {
+                                        seat_no: array[35],
+                                        seat_status: "enabled",
+                                    }]
+                                });
+                                newService.save(function (err) {
+                                    if (!err) {
+                                        //saved service
+                                    } else {
+                                        console.log(err);
+                                    }
+                                });
+                            }
+                        })
+                    } else {
+                        console.log(err);
+                    }
+                });
+            } else {
+                console.log("will not add service");
+
+                // service already exists
+            }
+        } else {
+            console.log(err);
+        }
+    });
+}
+
+function serviceCheck(getDateFunction, getTimeFunction) {
+    console.log("serviceCheck cron ran");
+    const date = getDateFunction();
     Service.find({ service_date: date, status: true }, function (err, foundService) {
         if (!err) {
             foundService.forEach(function (service) {
-                const [hours1, minutes1] = service.dep_time.split(":").map(Number);
-                const [hours2, minutes2] = time.split(":").map(Number);
-                if (hours1 < hours2 || (hours1 === hours2 && minutes1 < minutes2)) {
+                const time1 = service.dep_time;
+                const time2 = getTimeFunction();
+                const result = compareTimes(time1, time2);
+                if (result < 0) {
                     Service.updateOne({ _id: service._id }, { status: false }, function (err) {
                         if (err) {
                             console.log(err);
@@ -364,9 +615,8 @@ function serviceCheck(date, time) {
                         }
                     });
                 } else {
-                    // no update
+                    // nothing to update
                 }
-
             });
         } else {
             console.log(err);
@@ -411,6 +661,7 @@ function BookingsCheck() {
         }
     });
 }
+
 
 function bookingStatusCheck() {
     console.log("bookingStatusCheck() cron ran");
@@ -536,7 +787,8 @@ function wallettransactionCheck() {
     })
 }
 
-function deletePrevDayService(date) {
+function deletePrevDayService(getDateFunction) {
+    const date = getDateFunction();
     Service.deleteMany({ service_date: date }, function (err) {
         if (!err) {
             // deleted prev day service
@@ -727,7 +979,7 @@ app.post("/addbus", async function (req, res) {
 // node-cron prod tested
 
 const serviceCheckCron = cron.schedule('*/5 * * * *', () => {
-    serviceCheck(todayDate, currentTime);
+    serviceCheck(getCurrentDate, getCurrentTime);
 });
 
 const bookedSeatCheckCron = cron.schedule('*/2 * * * *', () => {
@@ -746,18 +998,17 @@ const wallettransactionCheckCron = cron.schedule('*/2 * * * *', () => {
     wallettransactionCheck();
 });
 
-
-
 const addServiceCron = cron.schedule('30 18 * * *', () => {
-    addService(todayDate);
-    addService(tommorowDate);
-    deletePrevDayService(yestDate);
+    addService(getCurrentDate);
+    addService(getTommorowDate);
+    deletePrevDayService(getLastDate);
 });
 
 const addServiceCheckCron = cron.schedule('*/33 * * * *', () => {
-    addService(todayDate);
-    addService(tommorowDate);
+    addService(getCurrentDate);
+    addService(getTommorowDate);
 });
+
 
 serviceCheckCron.start();
 bookedSeatCheckCron.start();
@@ -1681,8 +1932,6 @@ app.get("/sign-in-success", function (req, res) {
 });
 
 app.post("/search=q?", (req, res) => {
-    serviceCheck(todayDate, currentTime);
-    BookingsCheck();
     if (req.isAuthenticated()) {
         var today = new Date();
         var time = today.getHours() + ":" + today.getMinutes();
@@ -1998,23 +2247,23 @@ app.post("/checkout-wallet", function (req, res) {
                                 try {
                                     // Retrieve the service document
                                     const service = await Service.findOne({ service_no: serviceNo, service_date: serviceDate });
-                            
+
                                     if (!service) {
                                         console.log('In block phase : err-name : Service not found');
                                         res.render('swr')
                                         return false; // Service not found
                                     }
-                            
+
                                     // Check each seat's status
                                     for (const seatNumber of seatNumbers) {
                                         const seat = service.seat.find((s) => s.seat_no === seatNumber);
-                            
+
                                         if (!seat) {
                                             console.log(`Seat ${seatNumber} not found for this service`);
                                             res.render('swr')
                                             return false; // Seat not found
                                         }
-                            
+
                                         if (seat.seat_status === 'disabled') {
                                             console.log(`Seat ${seatNumber} is already disabled`);
                                             const disabledSeatNumbers = service.seat
@@ -2024,7 +2273,7 @@ app.post("/checkout-wallet", function (req, res) {
                                             return false; // Seat is disabled
                                         }
                                     }
-                            
+
                                     return true; // All seats are available
                                 } catch (error) {
                                     console.error('In block phase , err-name : Error checking seat availability:', error);
@@ -2035,86 +2284,89 @@ app.post("/checkout-wallet", function (req, res) {
                             const isSeatAvailable = await checkSeatAvailability(foundD.service_no, foundD.dep_date, newArray);
 
                             if (isSeatAvailable) {
-                            const inInt = parseInt(foundD.bill_amount);
-                            Wallet.findOne({ userID: foundD.userID }, function (err, foundWallet) {
-                                if (foundWallet.balance >= inInt) {
-                                    newArray.forEach(function (element) {
-                                        Service.updateOne(
-                                            { service_no: foundD.service_no, service_date: foundD.dep_date, 'seat.seat_no': element },
-                                            { $set: { 'seat.$.seat_status': 'disabled' } },
-                                            function (err, count) {
+                                const inInt = parseInt(foundD.bill_amount);
+                                Wallet.findOne({ userID: foundD.userID }, function (err, foundWallet) {
+                                    if (foundWallet.balance >= inInt) {
+                                        newArray.forEach(function (element) {
+                                            Service.updateOne(
+                                                { service_no: foundD.service_no, service_date: foundD.dep_date, 'seat.seat_no': element },
+                                                { $set: { 'seat.$.seat_status': 'disabled' } },
+                                                function (err, count) {
+                                                    if (!err) {
+                                                        // do nothing
+                                                    } else {
+                                                        console.log(err);
+                                                    }
+                                                });
+                                        });
+                                        Wallet.updateOne({ userID: foundD.userID, },
+                                            { $inc: { balance: -inInt } }, { new: true }, function (err) {
                                                 if (!err) {
-                                                    // do nothing
+                                                    const template1 = fs.readFileSync('email-temps/walletdebittemplate.ejs', 'utf8');
+                                                    const data1 = {
+                                                        name: req.user.name,
+                                                        amount: inInt
+                                                    };
+                                                    const html1 = ejs.render(template1, data1);
+                                                    const mailOptions1 = {
+                                                        from: process.env.MAIL_ID,
+                                                        to: req.user.email,
+                                                        subject: 'Wallet Update',
+                                                        html: html1
+                                                    };
+                                                    transporter.sendMail(mailOptions1, (error, info) => {
+                                                        if (!error) {
+                                                            //do nothing
+                                                        } else {
+                                                            console.log(error);
+                                                        }
+                                                    });
+                                                    const generatedWalletTransactionID = "ewtr_0" + generateUniqueId({ length: 28, useLetters: true })
+                                                    const bookingDate = getCurrentDate();
+                                                    const newBooking = new Booking({
+                                                        userID: foundD.userID,
+                                                        bookingID: foundD.bookingID,
+                                                        RzpOrderID: generatedWalletTransactionID,
+                                                        transactionID: generatedWalletTransactionID,
+                                                        paymentMethod: "eazy-wallet",
+                                                        bookingDate: bookingDate,
+                                                        bookingTime: time,
+                                                        bookingStatus: "paid",
+                                                        service_no: foundD.service_no,
+                                                        bus_type: foundD.bus_type,
+                                                        origin: foundD.origin,
+                                                        destination: foundD.destination,
+                                                        journeyDate: foundD.dep_date,
+                                                        dep_time: foundD.dep_time,
+                                                        arr_time: foundD.arr_time,
+                                                        boarding_point: foundD.boarding_point,
+                                                        drop_point: foundD.drop_point,
+                                                        pax_name: foundD.pax_name,
+                                                        pax_age: foundD.pax_age,
+                                                        pax_phone: foundD.pax_phone,
+                                                        pax_gender: foundD.pax_gender,
+                                                        seats: foundD.seats,
+                                                        fare: foundD.bill_amount
+                                                    });
+                                                    newBooking.save(function (err) {
+                                                        if (!err) {
+                                                            console.log("booking saved");
+                                                            res.redirect("/paymentsuccess=q?");
+                                                        } else {
+                                                            console.log(err);
+                                                            console.log("Wallet BookingSAVe error");
+                                                            res.redirect("/paymentfailure=q?");
+                                                        }
+                                                    });
                                                 } else {
                                                     console.log(err);
                                                 }
                                             });
-                                    });
-                                    Wallet.updateOne({ userID: foundD.userID, },
-                                        { $inc: { balance: -inInt } }, { new: true }, function (err) {
-                                            if (!err) {
-                                                const template1 = fs.readFileSync('email-temps/walletdebittemplate.ejs', 'utf8');
-                                                const data1 = {
-                                                    name: req.user.name,
-                                                    amount: inInt
-                                                };
-                                                const html1 = ejs.render(template1, data1);
-                                                const mailOptions1 = {
-                                                    from: process.env.MAIL_ID,
-                                                    to: req.user.email,
-                                                    subject: 'Wallet Update',
-                                                    html: html1
-                                                };
-                                                transporter.sendMail(mailOptions1, (error, info) => {
-                                                    if (!error) {
-                                                        //do nothing
-                                                    } else {
-                                                        console.log(error);
-                                                    }
-                                                });
-                                                const bookingDate = getCurrentDate();
-                                                const newBooking = new Booking({
-                                                    userID: foundD.userID,
-                                                    bookingID: foundD.bookingID,
-                                                    transactionID: "ewtr_0" + generateUniqueId({ length: 28, useLetters: true }),
-                                                    paymentMethod: "wallet",
-                                                    bookingDate: bookingDate,
-                                                    bookingTime: time,
-                                                    bookingStatus: "paid",
-                                                    service_no: foundD.service_no,
-                                                    bus_type: foundD.bus_type,
-                                                    origin: foundD.origin,
-                                                    destination: foundD.destination,
-                                                    journeyDate: foundD.dep_date,
-                                                    dep_time: foundD.dep_time,
-                                                    arr_time: foundD.arr_time,
-                                                    boarding_point: foundD.boarding_point,
-                                                    drop_point: foundD.drop_point,
-                                                    pax_name: foundD.pax_name,
-                                                    pax_age: foundD.pax_age,
-                                                    pax_phone: foundD.pax_phone,
-                                                    pax_gender: foundD.pax_gender,
-                                                    seats: foundD.seats,
-                                                    fare: foundD.bill_amount
-                                                });
-                                                newBooking.save(function (err) {
-                                                    if (!err) {
-                                                        res.redirect("/paymentsuccess=q?");
-                                                    } else {
-                                                        console.log(err);
-                                                        console.log("Wallet BookingSAVe error");
-                                                        res.redirect("/paymentfailure=q?");
-                                                    }
-                                                });
-                                            } else {
-                                                console.log(err);
-                                            }
-                                        });
-                                } else {
-                                    console.log("Low balance error");
-                                    res.redirect("/paymentfailure=q?");
-                                }
-                            });
+                                    } else {
+                                        console.log("Low balance error");
+                                        res.redirect("/paymentfailure=q?");
+                                    }
+                                });
                             }
                         }
                     } else {
@@ -2281,23 +2533,23 @@ app.post("/create-checkout-session", async (req, res) => {
                                 try {
                                     // Retrieve the service document
                                     const service = await Service.findOne({ service_no: serviceNo, service_date: serviceDate });
-                            
+
                                     if (!service) {
                                         console.log('In block phase : err-name : Service not found');
                                         res.render('swr')
                                         return false; // Service not found
                                     }
-                            
+
                                     // Check each seat's status
                                     for (const seatNumber of seatNumbers) {
                                         const seat = service.seat.find((s) => s.seat_no === seatNumber);
-                            
+
                                         if (!seat) {
                                             console.log(`Seat ${seatNumber} not found for this service`);
                                             res.render('swr')
                                             return false; // Seat not found
                                         }
-                            
+
                                         if (seat.seat_status === 'disabled') {
                                             console.log(`Seat ${seatNumber} is already disabled`);
                                             const disabledSeatNumbers = service.seat
@@ -2307,7 +2559,7 @@ app.post("/create-checkout-session", async (req, res) => {
                                             return false; // Seat is disabled
                                         }
                                     }
-                            
+
                                     return true; // All seats are available
                                 } catch (error) {
                                     console.error('In block phase , err-name : Error checking seat availability:', error);
@@ -2315,7 +2567,7 @@ app.post("/create-checkout-session", async (req, res) => {
                                     return false;
                                 }
                             }
-                            
+
                             const isSeatAvailable = await checkSeatAvailability(serviceNo, serviceDate, newArray);
 
                             if (isSeatAvailable) {
@@ -2539,7 +2791,7 @@ app.get("/paymentsuccess=q?", (req, res) => {
             if (!err) {
                 Booking.findOne({ bookingID: foundD.bookingID }, function (err, foundBooking) {
                     if (!err) {
-                        if (foundBooking.paymentMethod === "wallet") {
+                        if (foundBooking.paymentMethod === "eazy-wallet") {
                             User.findOne({ _id: foundBooking.userID }, async function (err, foundUser) {
                                 if (!err) {
                                     res.render("bookingsuccess", { Booking: foundBooking });

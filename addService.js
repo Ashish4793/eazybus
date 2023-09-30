@@ -1,8 +1,29 @@
 const mongoose = require("mongoose");
 const Service = require("./serviceSchema");
 const Bus = require("./busSchema");
+const { DateTime } = require("luxon");
 
-function addService(date){
+function getCurrentDate() {
+    const now = DateTime.now().setZone('Asia/Kolkata');
+    let day = now.day.toString();
+    let month = now.month.toString();
+    const year = now.year.toString();
+    if (day.length < 2) {
+        day = "0" + day;
+    } else {
+        // do nothing
+    }
+    if (month.length < 2) {
+        month = "0" + month;
+    } else {
+        // do nothing
+    }
+    let currentDate = day + "-" + month + "-" + year;
+    return currentDate;
+}
+
+async function addService(getDate){
+    const date = getDate()
     Service.find({service_date : date} , function(err , foundService){
         if (!err) {
             if (foundService.length === 0) {
