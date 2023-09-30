@@ -271,19 +271,24 @@
                                                           style="background-color: #01036f; border: none; width: 8rem;"
                                                           class="btn btn-primary btn-sm ">View Seats</button>
                                                         <% } else { %>
+                                                          
                                                           <button disabled
                                                             style="background-color: #777777; border: none; width: 8rem;"
                                                             class="btn btn-primary btn-sm">View Seats</button>
-                                                          <% if (bus.status===false) { %>
-                                                            <span
-                                                              style="color: red; margin-left: 1rem; font-size: 1.5vh;">Service
-                                                              left!</span>
-                                                            <% } else { %>
-                                                              <span style="color: red; margin-left: 1rem;">Sold
-                                                                out!</span>
-                                                              <% } %>
+                                                            <span style="margin-left: 10px;"><i id="wifi"  class="amen fa-solid fa-wifi fa-sm"></i> <i id="charging" class="amen fa-solid fa-plug-circle-bolt fa-sm"></i> <i id="bottle" class="amen fa-solid fa-bottle-water fa-sm"></i></span>
+
+                                                            <br>
+                                                            <% if (bus.status===false) { %>
+                                                              <span
+                                                                style="margin-top: 1rem; color: red; margin-left: 1rem; font-size: 1.5vh;">Service
+                                                                left!</span>
+                                                              <% } else { %>
+                                                                <span style="margin-top: 1rem; color: red; margin-left: 1rem;">Sold
+                                                                  out!</span>
                                                                 <% } %>
-                                                              <span style="margin-left: 10px;"><i id="wifi"  class="amen fa-solid fa-wifi fa-sm"></i> <i id="charging" class="amen fa-solid fa-plug-circle-bolt fa-sm"></i> <i id="bottle" class="amen fa-solid fa-bottle-water fa-sm"></i></span>
+                                                          
+                                                                <% } %>
+                                                              
                                                     </form>
                                               </div>
                                         </div>

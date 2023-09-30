@@ -170,31 +170,55 @@
                                                                 Home</button>
 
 
-                                                            <form onsubmit="vibrate()" id="paymentForm" action="#" method="POST">
+                                                            <form onsubmit="vibrate()" id="paymentForm" action="#"
+                                                                method="POST">
                                                                 <div class="d-block my-3 myDiv">
                                                                     <div style="margin-top: 2rem;" class="row">
                                                                         <div class="col">
-                                                                            <div style="width: 17rem; background-color: #f1f1f1;" class="btn-group"
-                                                                                data-toggle="buttons">
+                                                                            <div style="width: 17rem; background-color: #f1f1f1;"
+                                                                                class="btn-group" data-toggle="buttons">
                                                                                 <label
-                                                                                    class="btn btn-payment">
-                                                                                    
-                                                                                    <input onclick="myFunction(); vibrate();"
+                                                                                style="color: black; border: solid black 0.5px;"
+                                                                                class="btn btn-outline-light btn-payment">
+
+                                                                                    <input
+                                                                                        onclick="myFunction(); vibrate();"
                                                                                         type="radio"
                                                                                         name="paymentMethod"
                                                                                         value="create-checkout-session"
                                                                                         autocomplete="off">
-                                                                                        <img width="75" height="75" src="assets/img/razorpay.png" alt=""><br>
-                                                                                        <img width="25px" src="https://img.icons8.com/color-glass/48/000000/visa.png" alt="visa"/>
-                                                                                        <img width="25px" src="https://img.icons8.com/color/48/000000/mastercard-logo.png" alt="mastercard-logo"/>
-                                                                                        <img width="25px" src="https://img.icons8.com/color/48/000000/maestro.png" alt="maestro"/>
-                                                                                        <img width="20px" src="https://img.icons8.com/color/48/000000/american-express-squared.png" alt="american-express-squared"/>
-                                                                                        <img width="25px" src="https://img.icons8.com/color/48/000000/diners-club.png" alt="diners-club"/>
-                                                                                        <img width="25px" src="https://img.icons8.com/color/48/discover.png" alt="discover"/>
-                                                                                        <img width="25px" src="https://img.icons8.com/color/48/rupay.png" alt="rupay"/>
-                                                                                        <br>
-                                                                                        <img width="30px" src="assets/img/upi.png" alt="">
-                                                                                        <img width="30px" src="assets/img/netbanking.png" alt="">
+
+                                                                                    <img width="65" height="65"
+                                                                                        src="assets/img/razorpay.svg"
+                                                                                        alt=""><br>
+                                                                                    <img width="25px"
+                                                                                        src="../assets/img/visa.svg"
+                                                                                        alt="visa" />
+                                                                                    <img width="25px"
+                                                                                        src="../assets/img/mastercard.svg"
+                                                                                        alt="mastercard-logo" />
+                                                                                    <img width="25px"
+                                                                                        src="../assets/img/maestro.svg"
+                                                                                        alt="maestro" />
+                                                                                    <img width="20px"
+                                                                                        src="../assets/img/amex.svg"
+                                                                                        alt="american-express-squared" />
+                                                                                    <img width="25px"
+                                                                                        src="../assets/img/diners-club.svg"
+                                                                                        alt="diners-club" />
+                                                                                    <img width="25px"
+                                                                                        src="../assets/img/discover.svg"
+                                                                                        alt="discover" />
+                                                                                    <img width="25px"
+                                                                                        src="../assets/img/rupay.svg"
+                                                                                        alt="rupay" />
+                                                                                    <br>
+                                                                                    <img width="30px"
+                                                                                        src="../assets/img/upi.svg"
+                                                                                        alt="">
+                                                                                    <img width="30px"
+                                                                                        src="../assets/img/netbanking.svg"
+                                                                                        alt="net-banking">
                                                                                 </label>
                                                                             </div>
                                                                         </div>
@@ -206,8 +230,8 @@
                                                                                     <div style="width: 17rem; background-color: #f1f1f1;"
                                                                                         class="btn-group"
                                                                                         data-toggle="buttons">
-                                                                                        <label
-                                                                                            class="btn btn-outline-dark btn-payment disabled">
+                                                                                        <label style="color: black; border: solid black 0.5px;"
+                                                                                            class="btn btn-payment btn-outline-light disabled">
                                                                                             <input
                                                                                                 onclick="myFunction()"
                                                                                                 type="radio"
@@ -222,22 +246,22 @@
                                                                                     </div>
                                                                                     <div class="myDiv">
                                                                                         <label
-                                                                                            style="color: red; font-size: 13px; margin-left: 5px;">Insufficient
+                                                                                            style="color: rgb(206, 23, 23); font-size: 13px; margin-left: 5px;">Insufficient
                                                                                             wallet balance</label>
                                                                                     </div>
                                                                                     <% } else { %>
                                                                                         <div style="width: 17rem;"
                                                                                             class="btn-group"
                                                                                             data-toggle="buttons">
-                                                                                            <label
-                                                                                                class="btn btn-outline-dark btn-payment">
+                                                                                            <label style="color: black; border: solid black 0.5px;"
+                                                                                                class="btn btn-payment btn-outline-light">
                                                                                                 <input
                                                                                                     onclick="myFunction(); vibrate();"
                                                                                                     type="radio"
                                                                                                     name="paymentMethod"
                                                                                                     value="checkout-wallet"
                                                                                                     autocomplete="off">
-                                                                                                    <i class="fa-solid fa-wallet"
+                                                                                                <i class="fa-solid fa-wallet"
                                                                                                     style="color: #005eff;"></i>
                                                                                                 eazy-Wallet - &#8377;<%=
                                                                                                     wallet.balance %>
@@ -248,39 +272,40 @@
                                                                                                 <div style="width: 17rem;"
                                                                                                     class="btn-group"
                                                                                                     data-toggle="buttons">
-                                                                                                    <label
-                                                                                                        class="btn btn-outline-dark btn-payment disabled">
-
+                                                                                                    <label style="color: black; border: solid black 0.5px;"
+                                                                                                        class="btn btn-outline-light btn-payment disabled">
                                                                                                         <input
                                                                                                             onclick="myFunction()"
                                                                                                             type="radio"
                                                                                                             name="paymentMethod"
                                                                                                             value="checkout-wallet"
                                                                                                             autocomplete="off">
-                                                                                                            <i class="fa-solid fa-wallet"
+                                                                                                        <i class="fa-solid fa-wallet"
                                                                                                             style="color: #005eff;"></i>
                                                                                                         eazy-Wallet
                                                                                                     </label>
                                                                                                 </div>
                                                                                                 <div class="myDiv">
                                                                                                     <label
-                                                                                                        style="color: red; font-size: 13px; margin-left: 5px;">Wallet
+                                                                                                        style="color: rgb(206, 23, 23); font-size: 13px; margin-left: 5px;">Wallet
                                                                                                         payment is not
-                                                                                                        availabel</label>
+                                                                                                        available</label>
                                                                                                 </div>
                                                                                                 <% } %>
                                                                         </div>
                                                                     </div>
 
                                                                     <hr class="mb-4 myHR">
-                                                                    <div class="text-center">
-                                                                        <button
-                                                                            style="background-color: #01036f; border: none;"
-                                                                            class="btn btn-primary btn-lg btn-block"
-                                                                            type="submit">Pay
-                                                                            &#8377;<%= foundD.bill_amount %></button>
-                                                                    </div>
+                                                                    
                                                                     <div>
+                                                                        <div class="text-center">
+                                                                            <button
+                                                                                style="background-color: rgb(17, 165, 17); border: none; margin: 0 auto;
+                                                                                display: block;"
+                                                                                class="btn btn-primary btn-lg btn-block"
+                                                                                type="submit">Pay
+                                                                                &#8377;<%= foundD.bill_amount %></button>
+                                                                        </div>
                                                             </form>
 
                                                         </div>
@@ -314,9 +339,9 @@
         <!-- Template Main JS File -->
         <script src="assets/js/main.js"></script>
         <script>
-            function vibrate(){
-		navigator.vibrate(100);
-	}
+            function vibrate() {
+                navigator.vibrate(100);
+            }
             // Set the timer duration to 6 minutes (in seconds)
             const duration = 6 * 60;
 
