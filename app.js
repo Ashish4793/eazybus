@@ -184,7 +184,8 @@ const giftCardSchema = new mongoose.Schema({
     recMsg: String,
     status: { type: String, enum: ['open', 'redeemed'], default: "open" },
     paymentID: { type: String, default: "null" },
-    paymentStatus: { type: String, enum: ['initiated', 'completed'], default: "initiated" }
+    paymentStatus: { type: String, enum: ['initiated', 'completed'], default: "initiated" },
+    date: { type: Date, default: Date.now },
 });
 
 const User = mongoose.model("User", userSchema);
@@ -851,6 +852,7 @@ app.post("/onboarding", function (req, res) {
                             if (error) {
                                 console.log('Error occurred:', error.message);
                             } else {
+                                console.log(err);
                                 res.redirect("/logout");
                             }
                         });
